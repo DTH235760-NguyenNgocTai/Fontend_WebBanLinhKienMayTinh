@@ -1,0 +1,109 @@
+.admin-page-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-card {
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-filter-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(160px, 1fr)) auto;
+    gap: 0.85rem;
+    align-items: end;
+}
+
+.admin-table thead th {
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: 0.84rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.admin-table tbody tr {
+    background: #ffffff;
+}
+
+.admin-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-list-card {
+    padding: 1rem 1.05rem;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.admin-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-form-grid .full {
+    grid-column: 1 / -1;
+}
+
+.admin-inline-note {
+    margin-bottom: 1rem;
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    font-size: 0.92rem;
+}
+
+.admin-status-form {
+    display: inline-flex;
+    gap: 0.65rem;
+    align-items: center;
+}
+
+@media (max-width: 1199.98px) {
+    .admin-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991.98px) {
+    .admin-split,
+    .admin-filter-row,
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

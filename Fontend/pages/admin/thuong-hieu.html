@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý thương hiệu | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/admin.css">
+</head>
+<body data-page="admin-thuong-hieu" data-base-path="../../">
+    <div id="site-header"></div>
+
+    <main>
+        <section class="container page-shell">
+            <section class="page-hero">
+                <nav class="page-breadcrumb">
+                    <a href="../../index.html">Trang chủ</a>
+                    <span>/</span>
+                    <span class="current">Thương hiệu</span>
+                </nav>
+                <h1 class="mb-3">Quản lý thương hiệu</h1>
+                <p class="mb-0">CRUD trên bảng `thuong_hieu`, giữ đúng field `ten` và `logo`.</p>
+            </section>
+
+            <section class="admin-split">
+                <div class="admin-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2 class="section-title">Danh sách thương hiệu</h2>
+                            <p class="section-subtitle">Xem, sửa, xóa thương hiệu hiện có.</p>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table admin-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên</th>
+                                    <th>Logo</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-brands-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2 class="section-title" id="admin-brand-form-title">Thêm thương hiệu</h2>
+                            <p class="section-subtitle">Form bám đúng với bảng `thuong_hieu`.</p>
+                        </div>
+                    </div>
+                    <form id="admin-brand-form" class="d-grid gap-3">
+                        <div>
+                            <label class="form-label fw-semibold">Tên thương hiệu</label>
+                            <input id="brand-ten" type="text" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Logo</label>
+                            <input id="brand-logo" type="text" class="form-control" placeholder="Đường dẫn logo">
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button class="btn btn-primary" type="submit">Lưu thương hiệu</button>
+                            <button class="btn btn-outline-primary" type="button" id="admin-brand-reset">Tạo mới</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../../js/admin/thuong-hieu.js"></script>
+</body>
+</html>

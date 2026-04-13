@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý sản phẩm | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/admin.css">
+</head>
+<body data-page="admin-san-pham" data-base-path="../../">
+    <div id="site-header"></div>
+
+    <main>
+        <section class="container page-shell">
+            <section class="page-hero">
+                <nav class="page-breadcrumb">
+                    <a href="../../index.html">Trang chủ</a>
+                    <span>/</span>
+                    <span class="current">Sản phẩm</span>
+                </nav>
+                <h1 class="mb-3">Quản lý sản phẩm</h1>
+                <p class="mb-0">Thêm, sửa, xóa sản phẩm và cập nhật ảnh chính theo dữ liệu API.</p>
+            </section>
+
+            <section class="admin-page-grid">
+                <div class="admin-card">
+                    <div class="admin-toolbar">
+                        <div>
+                            <h2 class="section-title">Danh sách sản phẩm</h2>
+                            <p class="section-subtitle">Dữ liệu lấy từ `san_pham` và `hinh_anh_san_pham`.</p>
+                        </div>
+                        <input id="admin-product-search" type="search" class="form-control" style="max-width: 320px;" placeholder="Tìm tên hoặc mã sản phẩm">
+                    </div>
+                    <div class="table-responsive mt-4">
+                        <table class="table admin-table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th>Thương hiệu</th>
+                                    <th>Giá</th>
+                                    <th>Tồn kho</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-products-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2 class="section-title" id="admin-product-form-title">Thêm sản phẩm</h2>
+                            <p class="section-subtitle">Form bám theo đúng field của bảng `san_pham`.</p>
+                        </div>
+                    </div>
+                    <form id="admin-product-form" class="admin-form-grid">
+                        <div>
+                            <label class="form-label fw-semibold">Mã sản phẩm</label>
+                            <input id="product-ma-san-pham" type="text" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Tên</label>
+                            <input id="product-ten" type="text" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Danh mục</label>
+                            <select id="product-danh-muc-id" class="form-select" required></select>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Thương hiệu</label>
+                            <select id="product-thuong-hieu-id" class="form-select" required></select>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Giá bán</label>
+                            <input id="product-gia-ban" type="number" min="0" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Giá giảm</label>
+                            <input id="product-gia-giam" type="number" min="0" class="form-control">
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Bảo hành (tháng)</label>
+                            <input id="product-bao-hanh" type="number" min="0" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Số lượng tồn</label>
+                            <input id="product-so-luong-ton" type="number" min="0" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Trạng thái</label>
+                            <select id="product-trang-thai" class="form-select" required></select>
+                        </div>
+                        <div>
+                            <label class="form-label fw-semibold">Đường dẫn ảnh chính</label>
+                            <input id="product-duong-dan-anh" type="text" class="form-control">
+                        </div>
+                        <div class="full">
+                            <label class="form-label fw-semibold">Mô tả ngắn</label>
+                            <textarea id="product-mo-ta-ngan" class="form-control" rows="2" required></textarea>
+                        </div>
+                        <div class="full">
+                            <label class="form-label fw-semibold">Mô tả chi tiết</label>
+                            <textarea id="product-mo-ta-chi-tiet" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <div class="full d-flex gap-3">
+                            <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
+                            <button class="btn btn-outline-primary" type="button" id="admin-product-reset">Tạo mới</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../../js/admin/san-pham.js"></script>
+</body>
+</html>

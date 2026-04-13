@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../css/base.css">
+    <link rel="stylesheet" href="../../css/layout.css">
+    <link rel="stylesheet" href="../../css/components.css">
+    <link rel="stylesheet" href="../../css/admin.css">
+</head>
+<body data-page="admin-dashboard" data-base-path="../../">
+    <div id="site-header"></div>
+
+    <main>
+        <section class="container page-shell">
+            <section class="page-hero">
+                <nav class="page-breadcrumb">
+                    <a href="../../index.html">Trang chủ</a>
+                    <span>/</span>
+                    <span class="current">Dashboard</span>
+                </nav>
+                <h1 class="mb-3">Tổng quan quản trị</h1>
+                <p class="mb-0">Thống kê nhanh từ các bảng `san_pham`, `don_hang`, `tai_khoan`, `danh_muc`, `thuong_hieu`.</p>
+            </section>
+
+            <section class="admin-page-grid">
+                <div class="admin-stats-grid" id="admin-dashboard-stats"></div>
+                <div class="admin-split">
+                    <div class="admin-card">
+                        <div class="section-heading">
+                            <div>
+                                <h2 class="section-title">Đơn hàng mới</h2>
+                                <p class="section-subtitle">Theo dõi nhanh các đơn gần đây.</p>
+                            </div>
+                        </div>
+                        <div class="admin-list" id="admin-dashboard-orders"></div>
+                    </div>
+                    <div class="admin-card">
+                        <div class="section-heading">
+                            <div>
+                                <h2 class="section-title">Sản phẩm nổi bật</h2>
+                                <p class="section-subtitle">Preview nhanh từ danh sách sản phẩm hiện có.</p>
+                            </div>
+                        </div>
+                        <div class="admin-list" id="admin-dashboard-products"></div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="../../js/admin/dashboard.js"></script>
+</body>
+</html>
