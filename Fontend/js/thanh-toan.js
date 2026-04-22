@@ -7,6 +7,7 @@ import {
 import {
     formatCurrency,
     getProductCurrentPrice,
+    getProductPurchaseBlockMessage,
     initializeLayout,
     renderEmptyState,
     renderLoadingState,
@@ -70,7 +71,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const [cartData, sanPhamResponse, diaChiResponse] = await Promise.all([
-            gioHangApi.getCurrentWithDetails({ khach_hang_id: currentAccount.id }),
+            gioHangApi.getCurrentWithDetails({ tai_khoan_id: currentAccount.id }),
             sanPhamApi.listAll(),
             diaChiGiaoHangApi.listByCustomer(currentAccount.id)
         ]);
@@ -112,6 +113,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             `;
             return;
         }
+
+        const getBlockedCheckoutItem = (checkoutItems = items) =>
+            checkoutItems.find((item) =>
+                Boolean(
+                    getProductPurchaseBlockMessage(item.san_pham, {
+                        quantity: Number(item.so_luong || 0),
+                        includeName: true
+                    })
+                )
+            ) || null;
 
         const tongThanhToan = items.reduce((sum, item) => sum + item.thanh_tien, 0);
         const diaChiList = diaChiResponse.items;
@@ -162,7 +173,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const persistAddress = async () => {
             const payload = {
-                khach_hang_id: currentAccount.id,
+                tai_khoan_id: currentAccount.id,
                 ten_nguoi_nhan: document.getElementById("checkout-ten-nguoi-nhan").value.trim(),
                 so_dien_thoai: document.getElementById("checkout-so-dien-thoai").value.trim(),
                 dia_chi: document.getElementById("checkout-dia-chi").value.trim(),
@@ -193,9 +204,27 @@ document.addEventListener("DOMContentLoaded", async () => {
             event.preventDefault();
 
             try {
+                const latestProducts = (await sanPhamApi.listAll()).items;
+                const latestProductMap = new Map(latestProducts.map((item) => [Number(item.id), item]));
+                const latestCheckoutItems = items.map((item) => ({
+                    ...item,
+                    san_pham: latestProductMap.get(Number(item.san_pham_id)) || item.san_pham
+                }));
+                const blockedItem = getBlockedCheckoutItem(latestCheckoutItems);
+                if (blockedItem) {
+                    await showToast(
+                        `${getProductPurchaseBlockMessage(blockedItem.san_pham, {
+                            quantity: Number(blockedItem.so_luong || 0),
+                            includeName: true
+                        })} Vui lòng quay lại giỏ hàng để cập nhật trước khi đặt mua.`,
+                        "warning"
+                    );
+                    return;
+                }
+
                 const diaChiRecord = await persistAddress();
                 const don_hang = await donHangApi.checkout({
-                    khach_hang_id: currentAccount.id,
+                    tai_khoan_id: currentAccount.id,
                     nguoi_nhan: diaChiRecord.ten_nguoi_nhan,
                     so_dien_thoai: diaChiRecord.so_dien_thoai,
                     dia_chi: diaChiRecord.dia_chi,

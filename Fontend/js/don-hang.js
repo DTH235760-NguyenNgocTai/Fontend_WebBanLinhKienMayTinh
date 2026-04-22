@@ -42,6 +42,30 @@ function getTimelineMarkup(trangThai) {
     `;
 }
 
+function getOrderShippingAddress(order, fallbackAddress = null) {
+    const nestedAddress =
+        typeof order?.dia_chi_giao_hang === "object" && order?.dia_chi_giao_hang
+            ? order.dia_chi_giao_hang.dia_chi || ""
+            : "";
+
+    return (
+        order?.dia_chi ||
+        nestedAddress ||
+        fallbackAddress?.dia_chi ||
+        "Địa chỉ giao hàng sẽ được cập nhật khi đơn hàng có đầy đủ thông tin."
+    );
+}
+
+function getPaymentMethodLabel(payment, order = null) {
+    return (
+        payment?.phuong_thuc_thanh_toan ||
+        payment?.phuong_thuc ||
+        order?.phuong_thuc_thanh_toan ||
+        order?.phuong_thuc ||
+        "Chưa cập nhật"
+    );
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const pageRoot = document.getElementById("orders-page");
     const ordersRoot = document.getElementById("orders-list");
@@ -88,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const productMap = new Map(sanPhamResponse.items.map((item) => [Number(item.id), item]));
         const defaultAddress = diaChiResponse.items.find((item) => item.la_mac_dinh) || diaChiResponse.items[0] || null;
         const orders = (donHangResponse.items || [])
-            .filter((item) => Number(item.khach_hang_id) === Number(currentAccount.id))
+            .filter((item) => Number(item.tai_khoan_id) === Number(currentAccount.id))
             .sort((a, b) => new Date(b.ngay_dat || 0) - new Date(a.ngay_dat || 0));
 
         if (!orders.length) {
@@ -170,13 +194,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                                         <div class="small text-muted mb-1">Số điện thoại</div>
                                         <div class="mb-2">${order.so_dien_thoai || currentAccount.so_dien_thoai || ""}</div>
                                         <div class="small text-muted mb-1">Địa chỉ đang hiển thị</div>
-                                        <div>${defaultAddress?.dia_chi || "Địa chỉ giao hàng sẽ được cập nhật khi đơn hàng có đầy đủ thông tin."}</div>
+                                        <div>${getOrderShippingAddress(order, defaultAddress)}</div>
                                     </div>
                                     <div class="order-summary">
                                         <div class="fw-bold mb-3">Thanh toán</div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted">Phương thức</span>
-                                            <strong>${payment?.phuong_thuc || "Chưa cập nhật"}</strong>
+                                            <strong>${getPaymentMethodLabel(payment, order)}</strong>
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted">Trạng thái</span>

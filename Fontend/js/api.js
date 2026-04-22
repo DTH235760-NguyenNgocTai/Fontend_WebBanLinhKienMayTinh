@@ -396,23 +396,23 @@ export const hinhAnhSanPhamApi = createCrudResource(
 );
 export const diaChiGiaoHangApi = {
   ...createCrudResource(API_PATHS.dia_chi_giao_hang),
-  async listByCustomer(khach_hang_id) {
+  async listByCustomer(tai_khoan_id) {
     const response = await this.listAll();
 
     return {
       ...response,
-      items: filterItemsLocally(response.items, { khach_hang_id }),
+      items: filterItemsLocally(response.items, { tai_khoan_id }),
     };
   },
 };
 export const donHangApi = {
   ...createCrudResource(API_PATHS.don_hang),
-  async listByCustomer(khach_hang_id) {
+  async listByCustomer(tai_khoan_id) {
     const response = await this.listAll();
 
     return {
       ...response,
-      items: filterItemsLocally(response.items, { khach_hang_id }),
+      items: filterItemsLocally(response.items, { tai_khoan_id }),
     };
   },
   async checkout(payload) {
@@ -479,10 +479,10 @@ export const gioHangApi = {
   },
   async ensureCurrent(payload = {}) {
     const response = await createCrudResource(API_PATHS.gio_hang).listAll();
-    const currentCart = payload?.khach_hang_id
+    const currentCart = payload?.tai_khoan_id
       ? response.items.find(
           (item) =>
-            Number(item.khach_hang_id) === Number(payload.khach_hang_id),
+            Number(item.tai_khoan_id) === Number(payload.tai_khoan_id),
         ) || null
       : response.items[0] || null;
 
@@ -529,17 +529,31 @@ export const gioHangApi = {
   async removeItem(id) {
     return apiDelete(`${API_PATHS.chi_tiet_gio_hang}/${id}`);
   },
-  async addProduct({ gio_hang_id, san_pham_id, so_luong, don_gia }) {
+  async addProduct({
+    gio_hang_id,
+    san_pham_id,
+    so_luong,
+    don_gia,
+    maxQuantity = 0,
+  }) {
+    const requestedQuantity = Math.max(Number(so_luong || 0), 0);
+    const stockLimit = Math.max(Number(maxQuantity || 0), 0);
     const detailResponse = await this.getDetails({ gio_hang_id });
     const currentItem = detailResponse.items.find(
       (item) => Number(item.san_pham_id) === Number(san_pham_id),
     );
+    const currentQuantity = Number(currentItem?.so_luong || 0);
+    const nextQuantity = currentQuantity + requestedQuantity;
+
+    if (stockLimit > 0 && nextQuantity > stockLimit) {
+      throw new Error(`Số lượng vượt quá tồn kho hiện có (${stockLimit}).`);
+    }
 
     if (currentItem) {
       return this.updateItem(currentItem.id, {
         gio_hang_id,
         san_pham_id,
-        so_luong: Number(currentItem.so_luong || 0) + Number(so_luong || 0),
+        so_luong: nextQuantity,
         don_gia,
       });
     }
@@ -547,7 +561,7 @@ export const gioHangApi = {
     return this.addItem({
       gio_hang_id,
       san_pham_id,
-      so_luong,
+      so_luong: requestedQuantity,
       don_gia,
     });
   },

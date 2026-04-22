@@ -16,6 +16,7 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   dateStyle: "short",
   timeStyle: "short",
 });
+const PRODUCT_PURCHASABLE_STATUSES = new Set(["hoat_dong", "sap_het_hang"]);
 
 const body = document.body;
 const basePath = body?.dataset.basePath || "";
@@ -191,6 +192,55 @@ export function getProductDiscountPercent(san_pham) {
   return Math.round((1 - gia_giam / gia_ban) * 100);
 }
 
+function normalizeProductStatus(value = "") {
+  return String(value || "").trim().toLowerCase();
+}
+
+function getProductMessageLabel(san_pham, includeName = false) {
+  const productName = String(san_pham?.ten || "").trim();
+  if (includeName && productName) {
+    return `Sản phẩm "${productName}"`;
+  }
+
+  return "Sản phẩm";
+}
+
+export function getProductPurchaseBlockMessage(
+  san_pham,
+  { quantity = 1, includeName = false } = {},
+) {
+  const productStatus = normalizeProductStatus(san_pham?.trang_thai);
+  const stockQuantity = Math.max(Number(san_pham?.so_luong_ton || 0), 0);
+  const requestedQuantity = Math.max(Number(quantity || 0), 0);
+  const productLabel = getProductMessageLabel(san_pham, includeName);
+
+  if (productStatus === "ngung_kinh_doanh") {
+    return `${productLabel} đã ngừng kinh doanh.`;
+  }
+
+  if (productStatus === "dang_nhap_hang") {
+    return `${productLabel} đang nhập hàng.`;
+  }
+
+  if (stockQuantity <= 0) {
+    return `${productLabel} đã hết hàng.`;
+  }
+
+  if (requestedQuantity > stockQuantity) {
+    return `${productLabel} chỉ còn ${stockQuantity} sản phẩm.`;
+  }
+
+  if (!PRODUCT_PURCHASABLE_STATUSES.has(productStatus)) {
+    return `${productLabel} hiện chưa thể đặt mua.`;
+  }
+
+  return "";
+}
+
+export function isProductPurchasable(san_pham) {
+  return !getProductPurchaseBlockMessage(san_pham);
+}
+
 export function getProductImages(san_pham, imageMap = new Map()) {
   const nestedImages = Array.isArray(san_pham?.hinh_anh_san_pham)
     ? san_pham.hinh_anh_san_pham
@@ -231,9 +281,7 @@ export function renderProductCard(san_pham, options = {}) {
         (1000 * 60 * 60 * 24) <=
       30
     : false;
-  const canBuy =
-    san_pham?.trang_thai === "hoat_dong" &&
-    Number(san_pham?.so_luong_ton || 0) > 0;
+  const canBuy = isProductPurchasable(san_pham);
 
   return `
         <article class="product-card">
@@ -265,7 +313,7 @@ export function renderProductCard(san_pham, options = {}) {
                     <a class="btn btn-outline-primary" href="${buildUrl(ROUTES.chi_tiet_san_pham, { id: san_pham.id })}">
                         Xem chi tiết
                     </a>
-                    <button class="btn btn-primary" type="button" data-add-to-cart="${san_pham.id}" ${canBuy ? "" : "disabled"}>
+                    <button class="btn btn-primary" type="button" data-add-to-cart="${san_pham.id}">
                         <i class="fa-solid fa-cart-plus"></i>
                     </button>
                 </div>
@@ -699,7 +747,7 @@ async function safeGetCartCount(currentAccount, adminArea) {
 
   try {
     const { chi_tiet_gio_hang } = await gioHangApi.getCurrentWithDetails({
-      khach_hang_id: currentAccount.id,
+      tai_khoan_id: currentAccount.id,
     });
 
     return chi_tiet_gio_hang.reduce(
@@ -1171,16 +1219,32 @@ export async function addProductToCart({
     return false;
   }
 
-  const gio_hang = await gioHangApi.ensureCurrent({
-    khach_hang_id: account.id,
+  const productBlockMessage = getProductPurchaseBlockMessage(san_pham, {
+    quantity: so_luong,
+    includeName: true,
   });
 
-  await gioHangApi.addProduct({
-    gio_hang_id: gio_hang.id,
-    san_pham_id: san_pham.id,
-    so_luong,
-    don_gia: getProductCurrentPrice(san_pham),
+  if (productBlockMessage) {
+    showToast(productBlockMessage, "warning");
+    return false;
+  }
+
+  const gio_hang = await gioHangApi.ensureCurrent({
+    tai_khoan_id: account.id,
   });
+
+  try {
+    await gioHangApi.addProduct({
+      gio_hang_id: gio_hang.id,
+      san_pham_id: san_pham.id,
+      so_luong,
+      don_gia: getProductCurrentPrice(san_pham),
+      maxQuantity: Number(san_pham?.so_luong_ton || 0),
+    });
+  } catch (error) {
+    showToast(error.message || "Không thể thêm sản phẩm vào giỏ hàng.", "warning");
+    return false;
+  }
 
   showToast("Thêm sản phẩm vào giỏ hàng thành công.");
   setCartBadgeCount(getCurrentCartBadgeCount() + Number(so_luong || 0));

@@ -75,7 +75,7 @@ Neu backend tra 1 trong cac kieu tren thi frontend van doc duoc. Doi voi record 
 
 ### 4. Gio hang
 
-- Frontend tu tim gio hang hien tai theo `khach_hang_id` neu endpoint gio hang tra ca danh sach.
+- Frontend tu tim gio hang hien tai theo `tai_khoan_id` neu endpoint gio hang tra ca danh sach.
 - Chi tiet gio hang duoc lay tu `chi_tiet_gio_hang` va loc local theo `gio_hang_id` neu can.
 
 ### 5. Thanh toan
@@ -93,7 +93,7 @@ Payload checkout frontend hien gui:
 
 ```json
 {
-  "khach_hang_id": 1,
+  "tai_khoan_id": 1,
   "nguoi_nhan": "Nguyen Van A",
   "so_dien_thoai": "0900000000",
   "dia_chi": "Dia chi nhan hang",
@@ -104,10 +104,10 @@ Payload checkout frontend hien gui:
 
 ### 6. Don hang va tai khoan
 
-- Don hang cua user duoc doc qua `donHangApi.listByCustomer(khach_hang_id)`.
+- Don hang cua user duoc doc qua `donHangApi.listByCustomer(tai_khoan_id)`.
 - Chi tiet don hang duoc doc qua `chiTietDonHangApi.listByOrder(don_hang_id)`.
 - Thanh toan cua don hang duoc doc qua `thanhToanApi.listByOrder(don_hang_id)`.
-- Dia chi giao hang cua user duoc doc qua `diaChiGiaoHangApi.listByCustomer(khach_hang_id)`.
+- Dia chi giao hang cua user duoc doc qua `diaChiGiaoHangApi.listByCustomer(tai_khoan_id)`.
 
 ## Cac luong admin
 
@@ -189,8 +189,8 @@ Frontend se sanitize truoc khi:
 Do backend hien tai co mot so endpoint tra ca danh sach ma chua filter dung theo query, frontend dang bo sung cac wrapper sau:
 
 - `sanPhamApi.listAll(params)`
-- `diaChiGiaoHangApi.listByCustomer(khach_hang_id)`
-- `donHangApi.listByCustomer(khach_hang_id)`
+- `diaChiGiaoHangApi.listByCustomer(tai_khoan_id)`
+- `donHangApi.listByCustomer(tai_khoan_id)`
 - `chiTietDonHangApi.listByOrder(don_hang_id)`
 - `thanhToanApi.listByOrder(don_hang_id)`
 - `gioHangApi.ensureCurrent(payload)`
@@ -205,13 +205,13 @@ Frontend hien da co workaround, nhung ve lau dai backend nen ho tro:
 - `GET /san-pham`
   - nhan `keyword`, `danh_muc_id`, `thuong_hieu_id`, `sort`, `limit`
 - `GET /gio-hang`
-  - co the filter theo `khach_hang_id`
+  - co the filter theo `tai_khoan_id`
 - `GET /chi-tiet-gio-hang`
   - co the filter theo `gio_hang_id`
 - `GET /dia-chi-giao-hang`
-  - co the filter theo `khach_hang_id`
+  - co the filter theo `tai_khoan_id`
 - `GET /don-hang`
-  - co the filter theo `khach_hang_id`
+  - co the filter theo `tai_khoan_id`
 - `GET /chi-tiet-don-hang`
   - co the filter theo `don_hang_id`
 - `GET /thanh-toan`

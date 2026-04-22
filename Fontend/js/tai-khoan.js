@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let addressEditingId = 0;
     let addresses = diaChiResponse.items;
     const recentOrders = donHangResponse.items
-        .filter((item) => Number(item.khach_hang_id) === Number(currentAccount.id))
+        .filter((item) => Number(item.tai_khoan_id) === Number(currentAccount.id))
         .sort((a, b) => new Date(b.ngay_dat || 0) - new Date(a.ngay_dat || 0));
 
     const renderAccount = () => {
@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         event.preventDefault();
 
         const payload = {
-            khach_hang_id: currentAccount.id,
+            tai_khoan_id: currentAccount.id,
             ten_nguoi_nhan: document.getElementById("address-ten-nguoi-nhan").value.trim(),
             so_dien_thoai: document.getElementById("address-so-dien-thoai").value.trim(),
             dia_chi: document.getElementById("address-dia-chi").value.trim(),

@@ -82,7 +82,6 @@ export async function logout() {
     } finally {
         writeStoredAccount(null);
         clearAuthorizationToken();
-        window.location.href = "/login.html";
     }
 }
 

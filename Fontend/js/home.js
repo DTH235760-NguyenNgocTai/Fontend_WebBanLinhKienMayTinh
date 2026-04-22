@@ -6,6 +6,8 @@ import {
     buildUrl,
     escapeHtml,
     formatCurrency,
+    getProductCurrentPrice,
+    getProductDiscountPercent,
     getProductMainImage,
     initializeLayout,
     loadCatalogLookups,
@@ -40,7 +42,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ]);
 
         const newestProducts = sortByNewest(sanPhamResponse.items).filter((item) => item.trang_thai !== "ngung_kinh_doanh");
-        const discountedProducts = newestProducts.filter((item) => Number(item.gia_giam || 0) > 0).slice(0, 4);
+        const discountedProducts = newestProducts.filter((item) => getProductDiscountPercent(item) > 0).slice(0, 4);
         const heroProduct = newestProducts[0] || null;
         const productMap = new Map(newestProducts.map((item) => [Number(item.id), item]));
         const heroDescription =
@@ -63,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div class="d-flex flex-wrap gap-4 mt-4">
                             <div>
                                 <div class="small text-white-50">Giá hiện tại</div>
-                                <div class="fw-bold">${formatCurrency(heroProduct.gia_giam || heroProduct.gia_ban)}</div>
+                                <div class="fw-bold">${formatCurrency(getProductCurrentPrice(heroProduct))}</div>
                             </div>
                             <div>
                                 <div class="small text-white-50">Tồn kho</div>

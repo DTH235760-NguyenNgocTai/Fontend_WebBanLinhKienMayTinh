@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="col-lg-6">
                     <div class="info-card p-3 h-100">
                         <div class="text-muted small mb-1">Thanh toán</div>
-                        <div class="fw-bold mb-2">${payment?.phuong_thuc || "Chưa cập nhật"}</div>
+                        <div class="fw-bold mb-2">${payment?.phuong_thuc_thanh_toan || payment?.phuong_thuc || order?.phuong_thuc_thanh_toan || order?.phuong_thuc || "Chưa cập nhật"}</div>
                         <div>${payment ? renderStatus("trang_thai_thanh_toan", payment.trang_thai) : "Chưa có thanh toán"}</div>
                     </div>
                 </div>

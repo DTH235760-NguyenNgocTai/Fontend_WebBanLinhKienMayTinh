@@ -10,11 +10,13 @@ import {
     getProductImages,
     getProductMainImage,
     initializeLayout,
+    isProductPurchasable,
     loadCatalogLookups,
     renderEmptyState,
     renderLoadingState,
     renderPageHero,
     renderProductCard,
+    renderStatus,
     ROUTES
 } from "./helpers.js";
 
@@ -70,6 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const mainImage = getProductMainImage(san_pham, catalog.hinhAnhMap);
         const currentPrice = getProductCurrentPrice(san_pham);
         const discountPercent = getProductDiscountPercent(san_pham);
+        const canBuy = isProductPurchasable(san_pham);
         const shortDescriptionHtml = sanitizeRichTextHtml(san_pham.mo_ta_ngan || "");
         const detailDescriptionHtml = sanitizeRichTextHtml(san_pham.mo_ta_chi_tiet || "");
         const relatedProducts = sanPhamResponse.items.filter(
@@ -113,7 +116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     <div class="surface-card p-4 h-100">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                             ${catalog.thuongHieuMap.get(Number(san_pham.thuong_hieu_id)) ? `<span class="small-caps">${escapeHtml(catalog.thuongHieuMap.get(Number(san_pham.thuong_hieu_id)).ten)}</span>` : ""}
-                            <div>${san_pham.trang_thai ? `<span class="status-pill ${san_pham.trang_thai === "hoat_dong" ? "success" : san_pham.trang_thai === "sap_het_hang" ? "warning" : san_pham.trang_thai === "dang_nhap_hang" ? "info" : "danger"}">${escapeHtml(san_pham.trang_thai)}</span>` : ""}</div>
+                            <div>${san_pham.trang_thai ? renderStatus("trang_thai_san_pham", san_pham.trang_thai) : ""}</div>
                         </div>
                         <h1 class="h3 fw-bold mb-3">${escapeHtml(san_pham.ten)}</h1>
                         <div class="detail-price-box mb-4">
@@ -148,11 +151,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                         </div>
                         <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
                             <div class="quantity-control">
-                                <button type="button" id="detail-qty-minus" ${adminArea ? "disabled" : ""}>-</button>
+                                <button type="button" id="detail-qty-minus" ${adminArea || !canBuy ? "disabled" : ""}>-</button>
                                 <input id="detail-quantity" type="text" value="1" readonly>
-                                <button type="button" id="detail-qty-plus" ${adminArea ? "disabled" : ""}>+</button>
+                                <button type="button" id="detail-qty-plus" ${adminArea || !canBuy ? "disabled" : ""}>+</button>
                             </div>
-                            <button class="btn btn-primary" type="button" id="detail-add-to-cart" ${adminArea || san_pham.trang_thai !== "hoat_dong" || Number(san_pham.so_luong_ton || 0) <= 0 ? "disabled" : ""}>
+                            <button class="btn btn-primary" type="button" id="detail-add-to-cart" ${adminArea ? "disabled" : ""}>
                                 Thêm vào giỏ hàng
                             </button>
                         </div>

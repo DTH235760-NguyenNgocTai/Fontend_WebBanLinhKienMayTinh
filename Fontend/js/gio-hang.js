@@ -4,13 +4,15 @@ import {
     escapeHtml,
     formatCurrency,
     getProductCurrentPrice,
+    getProductPurchaseBlockMessage,
     initializeLayout,
     loadCatalogLookups,
     renderEmptyState,
     renderLoadingState,
     renderPageHero,
     ROUTES,
-    setCartBadgeCount
+    setCartBadgeCount,
+    showToast
 } from "./helpers.js";
 
 function calculateCartSummary(items = []) {
@@ -21,6 +23,17 @@ function calculateCartSummary(items = []) {
         totalQuantity,
         totalAmount
     };
+}
+
+function getBlockedCartItem(items = []) {
+    return items.find((item) =>
+        Boolean(
+            getProductPurchaseBlockMessage(item.san_pham, {
+                quantity: Number(item.so_luong || 0),
+                includeName: true
+            })
+        )
+    ) || null;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -77,7 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const renderCart = async () => {
             const [cartData, sanPhamResponse, catalog] = await Promise.all([
-                gioHangApi.getCurrentWithDetails({ khach_hang_id: currentAccount.id }),
+                gioHangApi.getCurrentWithDetails({ tai_khoan_id: currentAccount.id }),
                 sanPhamApi.listAll(),
                 loadCatalogLookups()
             ]);
@@ -179,9 +192,43 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <span class="fw-bold">Tổng cộng</span>
                         <span class="h4 mb-0 text-primary">${formatCurrency(summary.totalAmount)}</span>
                     </div>
-                    <a class="btn btn-primary w-100" href="${ROUTES.thanh_toan}">Tiến hành thanh toán</a>
+                    <a class="btn btn-primary w-100" href="${ROUTES.thanh_toan}" data-cart-checkout>
+                        Tiến hành thanh toán
+                    </a>
                 </div>
             `;
+
+            summaryRoot.onclick = async (event) => {
+                const checkoutTrigger = event.target.closest("[data-cart-checkout]");
+                if (!checkoutTrigger) {
+                    return;
+                }
+
+                try {
+                    const latestProducts = (await sanPhamApi.listAll()).items;
+                    const latestProductMap = new Map(latestProducts.map((item) => [Number(item.id), item]));
+                    const latestCartItems = items.map((item) => ({
+                        ...item,
+                        san_pham: latestProductMap.get(Number(item.san_pham_id)) || item.san_pham
+                    }));
+                    const blockedItem = getBlockedCartItem(latestCartItems);
+                    if (!blockedItem) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    await showToast(
+                        `${getProductPurchaseBlockMessage(blockedItem.san_pham, {
+                            quantity: Number(blockedItem.so_luong || 0),
+                            includeName: true
+                        })} Vui lòng cập nhật lại giỏ hàng trước khi mua.`,
+                        "warning"
+                    );
+                } catch (error) {
+                    event.preventDefault();
+                    await showToast(error.message || "Không thể kiểm tra lại sản phẩm trong giỏ hàng.", "danger");
+                }
+            };
 
             tableRoot.onclick = async (event) => {
                 const button = event.target.closest("[data-cart-action]");
@@ -198,6 +245,18 @@ document.addEventListener("DOMContentLoaded", async () => {
                     await gioHangApi.removeItem(item.id);
                     await renderCart();
                     return;
+                }
+
+                if (button.dataset.cartAction === "increase") {
+                    const increaseBlockMessage = getProductPurchaseBlockMessage(item.san_pham, {
+                        quantity: Number(item.so_luong || 0) + 1,
+                        includeName: true
+                    });
+
+                    if (increaseBlockMessage) {
+                        await showToast(increaseBlockMessage, "warning");
+                        return;
+                    }
                 }
 
                 const nextQuantity =
