@@ -1,5 +1,7 @@
 :root {
     --site-header-offset: 126px;
+    --site-side-nav-gap: 0px;
+    --page-inline-space: clamp(0.95rem, 1.8vw, 1.5rem);
     --primary-red: #d70018;
     --primary-red-dark: #b10014;
     --accent-orange: #ff9f1a;
@@ -38,6 +40,7 @@ body {
     margin: 0;
     min-height: 100vh;
     padding-top: var(--site-header-offset);
+    overflow-x: hidden;
     font-family: "Be Vietnam Pro", sans-serif;
     color: var(--dark-navy);
     background:
@@ -79,14 +82,23 @@ button {
 
 main {
     min-height: calc(100vh - 320px);
+    min-width: 0;
 }
 
 .page-shell {
-    padding: 2rem 0 4rem;
+    min-width: 0;
+    padding: 2rem var(--page-inline-space) 4rem;
 }
 
 .section-space {
     padding: 2rem 0;
+}
+
+.page-shell > *,
+.section-space > *,
+.surface-card,
+.soft-panel {
+    min-width: 0;
 }
 
 .section-heading {
@@ -190,5 +202,13 @@ main {
 @media (max-width: 991.98px) {
     .page-shell {
         padding-top: 1.5rem;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .page-shell .row > [class^="col-lg-"],
+    .page-shell .row > [class*=" col-lg-"] {
+        flex: 0 0 100%;
+        width: 100%;
     }
 }

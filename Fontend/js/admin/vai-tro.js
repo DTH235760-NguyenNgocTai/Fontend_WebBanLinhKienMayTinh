@@ -1,5 +1,13 @@
 import { vaiTroApi } from "../api.js";
-import { ensureAdminPage, initializeLayout, renderEmptyState, renderLoadingState, showToast } from "../helpers.js";
+import {
+    ensureAdminPage,
+    escapeHtml,
+    initializeLayout,
+    renderEmptyState,
+    renderLoadingState,
+    showConfirmDialog,
+    showToast
+} from "../helpers.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const account = await ensureAdminPage();
@@ -11,19 +19,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const tableRoot = document.getElementById("admin-roles-table");
     const form = document.getElementById("admin-role-form");
+    const formCard = form?.closest(".admin-card");
+    const formTitle = document.getElementById("admin-role-form-title");
+    const formSubtitle = formCard?.querySelector(".section-subtitle");
+    const submitButton = form?.querySelector('button[type="submit"]');
+    const resetButton = document.getElementById("admin-role-reset");
+    const nameInput = document.getElementById("role-ten");
     let editingId = 0;
     let roles = [];
+    const defaultFormSubtitle = formSubtitle?.textContent?.trim() || "";
 
-    const loadRoles = async () => {
+    const updateFormMode = ({ isEditing = false, record = null } = {}) => {
+        form.dataset.mode = isEditing ? "edit" : "create";
+        formTitle.textContent = isEditing ? "Cập nhật vai trò" : "Thêm vai trò";
+
+        if (formSubtitle) {
+            formSubtitle.textContent = isEditing
+                ? `Đang sửa vai trò: ${record?.ten || "Vai trò đã chọn"}. Bấm "Cập nhật vai trò" để lưu, hoặc "Hủy chỉnh sửa" để quay lại chế độ thêm mới.`
+                : defaultFormSubtitle;
+        }
+
+        if (submitButton) {
+            submitButton.textContent = isEditing ? "Cập nhật vai trò" : "Lưu vai trò";
+        }
+
+        if (resetButton) {
+            resetButton.textContent = isEditing ? "Hủy chỉnh sửa" : "Tạo mới";
+        }
+    };
+
+    const focusFormForEditing = () => {
+        formCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.setTimeout(() => nameInput?.focus(), 160);
+    };
+
+    const highlightRoleRow = (roleId) => {
+        const row = tableRoot.querySelector(`[data-role-row="${Number(roleId)}"]`);
+        if (!row) {
+            return;
+        }
+
+        row.classList.add("table-success");
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => row.classList.remove("table-success"), 2400);
+    };
+
+    const loadRoles = async ({ highlightId = 0 } = {}) => {
         tableRoot.innerHTML = `<tr><td colspan="3">${renderLoadingState("Đang tải vai trò...")}</td></tr>`;
-        roles = (await vaiTroApi.list()).items;
+        roles = (await vaiTroApi.listAll()).items;
         tableRoot.innerHTML = roles.length
             ? roles
                   .map(
                       (item) => `
-                        <tr>
+                        <tr data-role-row="${Number(item.id)}">
                             <td>${item.id}</td>
-                            <td>${item.ten}</td>
+                            <td>${escapeHtml(item.ten || "")}</td>
                             <td class="text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <button class="btn btn-outline-primary btn-sm" type="button" data-edit-role="${item.id}">Sửa</button>
@@ -39,12 +89,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                   title: "Chưa có vai trò",
                   message: "Vai trò mới sẽ hiển thị tại đây."
               })}</td></tr>`;
+
+        if (highlightId) {
+            window.requestAnimationFrame(() => highlightRoleRow(highlightId));
+        }
     };
 
     const resetForm = () => {
         editingId = 0;
         form.reset();
-        document.getElementById("admin-role-form-title").textContent = "Thêm vai trò";
+        updateFormMode();
     };
 
     tableRoot.addEventListener("click", async (event) => {
@@ -58,19 +112,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             editingId = record.id;
-            document.getElementById("admin-role-form-title").textContent = "Cập nhật vai trò";
-            document.getElementById("role-ten").value = record.ten || "";
+            updateFormMode({ isEditing: true, record });
+            nameInput.value = record.ten || "";
+            focusFormForEditing();
         }
 
         if (deleteButton) {
             const id = Number(deleteButton.dataset.deleteRole);
-            if (!window.confirm("Xóa vai trò này?")) {
+            const confirmed = await showConfirmDialog({
+                title: "Xác nhận xóa vai trò",
+                message: "Bạn có chắc muốn xóa vai trò này không?",
+                confirmLabel: "Đồng ý xóa",
+                cancelLabel: "Không"
+            });
+            if (!confirmed) {
                 return;
             }
 
             try {
                 await vaiTroApi.remove(id);
-                showToast("Đã xóa vai trò.");
+                showToast("Xóa vai trò thành công.");
                 await loadRoles();
                 resetForm();
             } catch (error) {
@@ -79,23 +140,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    document.getElementById("admin-role-reset")?.addEventListener("click", resetForm);
+    resetButton?.addEventListener("click", resetForm);
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         try {
             const payload = {
-                ten: document.getElementById("role-ten").value.trim()
+                ten: nameInput.value.trim()
             };
-            if (editingId) {
-                await vaiTroApi.update(editingId, payload);
-            } else {
-                await vaiTroApi.create(payload);
-            }
+            const currentEditingId = editingId;
+            const savedRecord = currentEditingId
+                ? await vaiTroApi.update(currentEditingId, payload)
+                : await vaiTroApi.create(payload);
 
-            showToast(editingId ? "Đã cập nhật vai trò." : "Đã thêm vai trò.");
-            await loadRoles();
+            showToast(currentEditingId ? "Cập nhật vai trò thành công." : "Thêm vai trò thành công.");
+            await loadRoles({ highlightId: savedRecord?.id || currentEditingId });
             resetForm();
         } catch (error) {
             showToast(error.message || "Không thể lưu vai trò.", "danger");

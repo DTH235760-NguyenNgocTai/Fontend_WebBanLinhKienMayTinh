@@ -1,10 +1,8 @@
 import {
-    chiTietDonHangApi,
     diaChiGiaoHangApi,
     donHangApi,
     gioHangApi,
-    sanPhamApi,
-    thanhToanApi
+    sanPhamApi
 } from "./api.js";
 import {
     formatCurrency,
@@ -32,7 +30,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Thanh toán",
-                subtitle: "Bạn cần đăng nhập để tạo đơn hàng thật từ API.",
+                subtitle: "Đăng nhập để hoàn tất đơn hàng của bạn.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Thanh toán" }
@@ -41,7 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${renderEmptyState({
                 icon: "fa-credit-card",
                 title: "Bạn chưa đăng nhập",
-                message: "Luồng thanh toán dùng dữ liệu người dùng thật nên cần đăng nhập trước.",
+                message: "Vui lòng đăng nhập trước khi thanh toán.",
                 actionLabel: "Đăng nhập",
                 actionHref: `${ROUTES.login}?redirect=${encodeURIComponent(window.location.href)}`
             })}
@@ -73,8 +71,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const [cartData, sanPhamResponse, diaChiResponse] = await Promise.all([
             gioHangApi.getCurrentWithDetails({ khach_hang_id: currentAccount.id }),
-            sanPhamApi.list(),
-            diaChiGiaoHangApi.list({ khach_hang_id: currentAccount.id })
+            sanPhamApi.listAll(),
+            diaChiGiaoHangApi.listByCustomer(currentAccount.id)
         ]);
 
         const productMap = new Map(sanPhamResponse.items.map((item) => [Number(item.id), item]));
@@ -196,43 +194,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             try {
                 const diaChiRecord = await persistAddress();
-                const don_hang = await donHangApi.create({
+                const don_hang = await donHangApi.checkout({
                     khach_hang_id: currentAccount.id,
-                    trang_thai: "cho_xac_nhan",
                     nguoi_nhan: diaChiRecord.ten_nguoi_nhan,
                     so_dien_thoai: diaChiRecord.so_dien_thoai,
-                    phi_van_chuyen: 0,
-                    tien_giam: 0,
-                    tong_thanh_toan: tongThanhToan,
+                    dia_chi: diaChiRecord.dia_chi,
+                    phuong_thuc_thanh_toan: document.getElementById("checkout-phuong-thuc").value.trim(),
                     ghi_chu: document.getElementById("checkout-ghi-chu").value.trim()
                 });
 
-                await Promise.all(
-                    items.map((item) =>
-                        chiTietDonHangApi.create({
-                            don_hang_id: don_hang.id,
-                            san_pham_id: item.san_pham_id,
-                            so_luong: item.so_luong,
-                            don_gia: item.don_gia_thuc_te,
-                            thanh_tien: item.thanh_tien
-                        })
-                    )
-                );
-
-                await thanhToanApi.create({
-                    don_hang_id: don_hang.id,
-                    phuong_thuc: document.getElementById("checkout-phuong-thuc").value.trim(),
-                    so_tien: tongThanhToan,
-                    trang_thai: "chua_thanh_toan",
-                    ma_giao_dich: ""
-                });
-
-                await Promise.all(items.map((item) => gioHangApi.removeItem(item.id)));
-
-                showToast("Đã tạo đơn hàng thành công.");
-                setTimeout(() => {
-                    window.location.href = `${ROUTES.don_hang}?id=${don_hang.id}`;
-                }, 300);
+                await showToast("Đặt hàng thành công.");
+                window.location.href = `${ROUTES.don_hang}?id=${don_hang.id}`;
             } catch (error) {
                 showToast(error.message || "Không thể tạo đơn hàng.", "danger");
             }
@@ -241,7 +213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Thanh toán",
-                subtitle: "Có lỗi khi tải dữ liệu checkout.",
+                subtitle: "Không thể chuẩn bị dữ liệu thanh toán lúc này.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Thanh toán" }
@@ -250,7 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${renderEmptyState({
                 icon: "fa-triangle-exclamation",
                 title: "Không thể chuẩn bị dữ liệu thanh toán",
-                message: error.message || "Vui lòng kiểm tra API và thử lại."
+                message: error.message || "Vui lòng thử lại sau."
             })}
         `;
     }

@@ -1,12 +1,14 @@
 import { sanPhamApi } from "./api.js";
+import { enableProductCardPreview } from "./product-preview.js";
+import { sanitizeRichTextHtml } from "./rich-text.js";
 import {
     addProductToCart,
-    buildUrl,
     escapeHtml,
     formatCurrency,
     getProductCurrentPrice,
     getProductDiscountPercent,
     getProductImages,
+    getProductMainImage,
     initializeLayout,
     loadCatalogLookups,
     renderEmptyState,
@@ -39,17 +41,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const [san_pham, sanPhamResponse, catalog] = await Promise.all([
-            sanPhamApi.get(productId),
-            sanPhamApi.list(),
+        const [productDetailResponse, sanPhamResponse, catalog] = await Promise.all([
+            sanPhamApi.get(productId).catch(() => null),
+            sanPhamApi.listAll(),
             loadCatalogLookups()
         ]);
+
+        const listMatchedProduct = sanPhamResponse.items.find((item) => Number(item.id) === productId) || null;
+        const detailMatchedProduct =
+            Number(productDetailResponse?.id) === productId ? productDetailResponse : null;
+        const san_pham = detailMatchedProduct
+            ? { ...listMatchedProduct, ...detailMatchedProduct }
+            : listMatchedProduct;
 
         if (!san_pham) {
             detailRoot.innerHTML = renderEmptyState({
                 icon: "fa-box-open",
                 title: "Không tìm thấy sản phẩm",
-                message: "Sản phẩm này chưa tồn tại hoặc API không trả về dữ liệu.",
+                message: "Sản phẩm này hiện không tồn tại hoặc đã được gỡ khỏi cửa hàng.",
                 actionLabel: "Quay lại danh sách",
                 actionHref: ROUTES.san_pham
             });
@@ -58,8 +67,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const imageList = getProductImages(san_pham, catalog.hinhAnhMap);
+        const mainImage = getProductMainImage(san_pham, catalog.hinhAnhMap);
         const currentPrice = getProductCurrentPrice(san_pham);
         const discountPercent = getProductDiscountPercent(san_pham);
+        const shortDescriptionHtml = sanitizeRichTextHtml(san_pham.mo_ta_ngan || "");
+        const detailDescriptionHtml = sanitizeRichTextHtml(san_pham.mo_ta_chi_tiet || "");
         const relatedProducts = sanPhamResponse.items.filter(
             (item) =>
                 Number(item.id) !== Number(san_pham.id) &&
@@ -71,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         detailRoot.innerHTML = `
             ${renderPageHero({
                 title: san_pham.ten,
-                subtitle: "Chi tiết sản phẩm đã được tách riêng, chỉ hiển thị field bám theo CSDL và dữ liệu lấy qua API thật.",
+                subtitle: "Thông tin chi tiết, giá bán, mô tả và hình ảnh của sản phẩm.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Sản phẩm", url: ROUTES.san_pham },
@@ -82,13 +94,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="col-lg-6">
                     <div class="detail-gallery">
                         <div class="detail-main-image">
-                            <img id="detail-main-image" src="${escapeHtml(imageList[0]?.duong_dan || "")}" alt="${escapeHtml(san_pham.ten)}">
+                            <img id="detail-main-image" src="${escapeHtml(mainImage)}" alt="${escapeHtml(san_pham.ten)}">
                         </div>
                         <div class="detail-thumbs" id="detail-thumbs">
-                            ${imageList
+                            ${(imageList.length ? imageList : [{ duong_dan: mainImage }])
                                 .map(
                                     (image, index) => `
-                                        <button class="detail-thumb ${index === 0 ? "active" : ""}" type="button" data-detail-image="${escapeHtml(image.duong_dan)}">
+                                        <button class="detail-thumb ${index === 0 ? "active" : ""}" type="button" data-detail-image="${escapeHtml(image.duong_dan)}" aria-label="Xem ảnh ${index + 1}" aria-pressed="${index === 0 ? "true" : "false"}">
                                             <img src="${escapeHtml(image.duong_dan)}" alt="${escapeHtml(san_pham.ten)}">
                                         </button>
                                     `
@@ -113,7 +125,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 ${discountPercent > 0 ? `Giảm ${discountPercent}% từ giá bán` : "Sản phẩm đang dùng giá bán hiện tại"}
                             </div>
                         </div>
-                        <p class="text-muted mb-4">${escapeHtml(san_pham.mo_ta_ngan || "Chưa có mô tả ngắn.")}</p>
+                        <div class="rich-content rich-content-compact mb-4">
+                            ${shortDescriptionHtml || `<p class="text-muted mb-0">Chưa có mô tả ngắn.</p>`}
+                        </div>
                         <div class="product-info-grid mb-4">
                             <div class="info-card p-3">
                                 <div class="text-muted small mb-1">Mã sản phẩm</div>
@@ -142,7 +156,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 Thêm vào giỏ hàng
                             </button>
                         </div>
-                        <div class="text-muted small">Frontend ưu tiên giữ nguyên field dữ liệu của CSDL: `ten`, `gia_ban`, `gia_giam`, `mo_ta_ngan`, `mo_ta_chi_tiet`, `thoi_gian_bao_hanh_thang`, `so_luong_ton`, `trang_thai`.</div>
                     </div>
                 </div>
             </div>
@@ -150,7 +163,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="section-heading">
                     <h2 class="section-title">Mô tả chi tiết</h2>
                 </div>
-                <p class="mb-0 text-muted">${escapeHtml(san_pham.mo_ta_chi_tiet || "Chưa có mô tả chi tiết.")}</p>
+                <div class="rich-content">
+                    ${detailDescriptionHtml || `<p class="text-muted mb-0">Chưa có mô tả chi tiết.</p>`}
+                </div>
             </div>
         `;
 
@@ -159,15 +174,25 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-link",
                   title: "Chưa có sản phẩm liên quan",
-                  message: "Danh sách sản phẩm cùng danh mục sẽ xuất hiện tại đây khi API trả dữ liệu."
+                  message: "Những sản phẩm cùng danh mục sẽ xuất hiện tại đây khi cửa hàng cập nhật dữ liệu."
               });
+
+        enableProductCardPreview({
+            root: relatedRoot,
+            catalog,
+            resolveProduct: (productId) => relatedMap.get(Number(productId)) || null
+        });
 
         detailRoot.addEventListener("click", async (event) => {
             const thumb = event.target.closest("[data-detail-image]");
             if (thumb) {
                 document.getElementById("detail-main-image").src = thumb.dataset.detailImage;
-                document.querySelectorAll("[data-detail-image]").forEach((item) => item.classList.remove("active"));
+                document.querySelectorAll("[data-detail-image]").forEach((item) => {
+                    item.classList.remove("active");
+                    item.setAttribute("aria-pressed", "false");
+                });
                 thumb.classList.add("active");
+                thumb.setAttribute("aria-pressed", "true");
             }
 
             if (event.target.closest("#detail-qty-minus")) {
@@ -209,7 +234,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         detailRoot.innerHTML = renderEmptyState({
             icon: "fa-triangle-exclamation",
             title: "Không thể tải chi tiết sản phẩm",
-            message: error.message || "Vui lòng kiểm tra API và thử lại."
+            message: error.message || "Vui lòng thử lại sau."
         });
         relatedRoot.innerHTML = "";
     }

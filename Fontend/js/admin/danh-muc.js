@@ -1,5 +1,13 @@
 import { danhMucApi } from "../api.js";
-import { ensureAdminPage, initializeLayout, renderEmptyState, renderLoadingState, showToast } from "../helpers.js";
+import {
+    ensureAdminPage,
+    escapeHtml,
+    initializeLayout,
+    renderEmptyState,
+    renderLoadingState,
+    showConfirmDialog,
+    showToast
+} from "../helpers.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
     const account = await ensureAdminPage();
@@ -11,19 +19,61 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const tableRoot = document.getElementById("admin-categories-table");
     const form = document.getElementById("admin-category-form");
+    const formCard = form?.closest(".admin-card");
+    const formTitle = document.getElementById("admin-category-form-title");
+    const formSubtitle = formCard?.querySelector(".section-subtitle");
+    const submitButton = form?.querySelector('button[type="submit"]');
+    const resetButton = document.getElementById("admin-category-reset");
+    const nameInput = document.getElementById("category-ten");
     let editingId = 0;
     let categories = [];
+    const defaultFormSubtitle = formSubtitle?.textContent?.trim() || "";
 
-    const loadCategories = async () => {
+    const updateFormMode = ({ isEditing = false, record = null } = {}) => {
+        form.dataset.mode = isEditing ? "edit" : "create";
+        formTitle.textContent = isEditing ? "Cập nhật danh mục" : "Thêm danh mục";
+
+        if (formSubtitle) {
+            formSubtitle.textContent = isEditing
+                ? `Đang sửa danh mục: ${record?.ten || "Danh mục đã chọn"}. Bấm "Cập nhật danh mục" để lưu, hoặc "Hủy chỉnh sửa" để quay lại chế độ thêm mới.`
+                : defaultFormSubtitle;
+        }
+
+        if (submitButton) {
+            submitButton.textContent = isEditing ? "Cập nhật danh mục" : "Lưu danh mục";
+        }
+
+        if (resetButton) {
+            resetButton.textContent = isEditing ? "Hủy chỉnh sửa" : "Tạo mới";
+        }
+    };
+
+    const focusFormForEditing = () => {
+        formCard?.scrollIntoView({ behavior: "smooth", block: "start" });
+        window.setTimeout(() => nameInput?.focus(), 160);
+    };
+
+    const highlightCategoryRow = (categoryId) => {
+        const row = tableRoot.querySelector(`[data-category-row="${Number(categoryId)}"]`);
+        if (!row) {
+            return;
+        }
+
+        row.classList.add("table-success");
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => row.classList.remove("table-success"), 2400);
+    };
+
+    const loadCategories = async ({ highlightId = 0 } = {}) => {
         tableRoot.innerHTML = `<tr><td colspan="3">${renderLoadingState("Đang tải danh mục...")}</td></tr>`;
-        categories = (await danhMucApi.list()).items;
+        categories = (await danhMucApi.listAll()).items;
         tableRoot.innerHTML = categories.length
             ? categories
                   .map(
                       (item) => `
-                        <tr>
+                        <tr data-category-row="${Number(item.id)}">
                             <td>${item.id}</td>
-                            <td>${item.ten}</td>
+                            <td>${escapeHtml(item.ten || "")}</td>
                             <td class="text-end">
                                 <div class="d-flex justify-content-end gap-2">
                                     <button class="btn btn-outline-primary btn-sm" type="button" data-edit-category="${item.id}">Sửa</button>
@@ -39,12 +89,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                   title: "Chưa có danh mục",
                   message: "Danh mục mới sẽ hiển thị tại đây."
               })}</td></tr>`;
+
+        if (highlightId) {
+            window.requestAnimationFrame(() => highlightCategoryRow(highlightId));
+        }
     };
 
     const resetForm = () => {
         editingId = 0;
         form.reset();
-        document.getElementById("admin-category-form-title").textContent = "Thêm danh mục";
+        updateFormMode();
     };
 
     tableRoot.addEventListener("click", async (event) => {
@@ -58,19 +112,26 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             editingId = record.id;
-            document.getElementById("admin-category-form-title").textContent = "Cập nhật danh mục";
-            document.getElementById("category-ten").value = record.ten || "";
+            updateFormMode({ isEditing: true, record });
+            nameInput.value = record.ten || "";
+            focusFormForEditing();
         }
 
         if (deleteButton) {
             const id = Number(deleteButton.dataset.deleteCategory);
-            if (!window.confirm("Xóa danh mục này?")) {
+            const confirmed = await showConfirmDialog({
+                title: "Xác nhận xóa danh mục",
+                message: "Bạn có chắc muốn xóa danh mục này không?",
+                confirmLabel: "Đồng ý xóa",
+                cancelLabel: "Không"
+            });
+            if (!confirmed) {
                 return;
             }
 
             try {
                 await danhMucApi.remove(id);
-                showToast("Đã xóa danh mục.");
+                showToast("Xóa danh mục thành công.");
                 await loadCategories();
                 resetForm();
             } catch (error) {
@@ -79,23 +140,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    document.getElementById("admin-category-reset")?.addEventListener("click", resetForm);
+    resetButton?.addEventListener("click", resetForm);
 
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         try {
             const payload = {
-                ten: document.getElementById("category-ten").value.trim()
+                ten: nameInput.value.trim()
             };
-            if (editingId) {
-                await danhMucApi.update(editingId, payload);
-            } else {
-                await danhMucApi.create(payload);
-            }
+            const currentEditingId = editingId;
+            const savedRecord = currentEditingId
+                ? await danhMucApi.update(currentEditingId, payload)
+                : await danhMucApi.create(payload);
 
-            showToast(editingId ? "Đã cập nhật danh mục." : "Đã thêm danh mục.");
-            await loadCategories();
+            showToast(currentEditingId ? "Cập nhật danh mục thành công." : "Thêm danh mục thành công.");
+            await loadCategories({ highlightId: savedRecord?.id || currentEditingId });
             resetForm();
         } catch (error) {
             showToast(error.message || "Không thể lưu danh mục.", "danger");

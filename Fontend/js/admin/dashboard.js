@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const [sanPhamResponse, donHangResponse, danhMucResponse, thuongHieuResponse, taiKhoanResponse, catalog] = await Promise.all([
-            sanPhamApi.list(),
+            sanPhamApi.listAll(),
             donHangApi.list(),
             danhMucApi.list(),
             thuongHieuApi.list(),

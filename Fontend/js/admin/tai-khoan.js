@@ -5,7 +5,6 @@ import {
     initializeLayout,
     renderEmptyState,
     renderLoadingState,
-    renderStatus,
     showToast
 } from "../helpers.js";
 
@@ -32,8 +31,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         tableRoot.innerHTML = filtered.length
             ? filtered
-                  .map(
-                      (item) => `
+                  .map((item) => {
+                      const roleName = roleMap.get(Number(item.vai_tro_id))?.ten || "Khong xac dinh";
+
+                      return `
                         <tr>
                             <td>
                                 <div class="fw-bold">${item.ho_ten || ""}</div>
@@ -42,12 +43,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <td>${item.ten_dang_nhap || ""}</td>
                             <td>${item.so_dien_thoai || ""}</td>
                             <td>
-                                <select class="form-select form-select-sm" data-account-role="${item.id}">
-                                    <option value="">Chọn vai trò</option>
-                                    ${roles
-                                        .map((role) => `<option value="${role.id}" ${Number(role.id) === Number(item.vai_tro_id) ? "selected" : ""}>${role.ten}</option>`)
-                                        .join("")}
-                                </select>
+                                <div class="fw-semibold">${roleName}</div>
+                                <div class="small text-muted">Vai tro chi doc o man hinh nay</div>
                             </td>
                             <td>
                                 <select class="form-select form-select-sm" data-account-status="${item.id}">
@@ -58,22 +55,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <td>${formatDateTime(item.ngay_tao)}</td>
                             <td class="text-end">
                                 <button class="btn btn-primary btn-sm" type="button" data-save-account="${item.id}">
-                                    Lưu
+                                    Luu trang thai
                                 </button>
                             </td>
                         </tr>
-                    `
-                  )
+                    `;
+                  })
                   .join("")
             : `<tr><td colspan="7">${renderEmptyState({
                   icon: "fa-users",
-                  title: "Không có tài khoản phù hợp",
-                  message: "Hãy thử lại với từ khóa khác."
+                  title: "Khong co tai khoan phu hop",
+                  message: "Hay thu lai voi tu khoa khac."
               })}</td></tr>`;
     };
 
     const loadData = async () => {
-        tableRoot.innerHTML = `<tr><td colspan="7">${renderLoadingState("Đang tải tài khoản...")}</td></tr>`;
+        tableRoot.innerHTML = `<tr><td colspan="7">${renderLoadingState("Dang tai tai khoan...")}</td></tr>`;
         const [accountResponse, roleResponse] = await Promise.all([taiKhoanApi.list(), vaiTroApi.list()]);
         accounts = accountResponse.items;
         roles = roleResponse.items;
@@ -97,13 +94,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             await taiKhoanApi.update(accountId, {
                 ...record,
-                vai_tro_id: Number(tableRoot.querySelector(`[data-account-role="${accountId}"]`).value || 0) || null,
                 trang_thai: tableRoot.querySelector(`[data-account-status="${accountId}"]`).value
             });
-            showToast("Đã cập nhật tài khoản.");
+            showToast("Cập nhật trạng thái tài khoản thành công.");
             await loadData();
         } catch (error) {
-            showToast(error.message || "Không thể cập nhật tài khoản.", "danger");
+            showToast(error.message || "Khong the cap nhat trang thai tai khoan.", "danger");
         }
     });
 

@@ -27,7 +27,7 @@ function getTimelineMarkup(trangThai) {
                     (step, index) => `
                         <div class="timeline-step ${index <= currentIndex ? "is-active" : ""}">
                             <div class="fw-bold mb-1">${step.label}</div>
-                            <div class="text-muted small">Trạng thái đơn hàng theo enum trong CSDL.</div>
+                            <div class="text-muted small">Trạng thái hiện tại của đơn hàng.</div>
                         </div>
                     `
                 )
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Đơn hàng",
-                subtitle: "Bạn cần đăng nhập để xem danh sách đơn hàng từ API.",
+                subtitle: "Đăng nhập để theo dõi các đơn hàng của bạn.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Đơn hàng" }
@@ -78,10 +78,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const [donHangResponse, sanPhamResponse, catalog, diaChiResponse] = await Promise.all([
-            donHangApi.list({ khach_hang_id: currentAccount.id }),
-            sanPhamApi.list(),
+            donHangApi.listByCustomer(currentAccount.id),
+            sanPhamApi.listAll(),
             loadCatalogLookups(),
-            diaChiGiaoHangApi.list({ khach_hang_id: currentAccount.id })
+            diaChiGiaoHangApi.listByCustomer(currentAccount.id)
         ]);
 
         const selectedOrderId = Number(new URLSearchParams(window.location.search).get("id") || 0);
@@ -109,8 +109,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             for (const order of orders) {
                 const [chiTietResponse, thanhToanResponse] = await Promise.all([
-                    chiTietDonHangApi.list({ don_hang_id: order.id }),
-                    thanhToanApi.list({ don_hang_id: order.id })
+                    chiTietDonHangApi.listByOrder(order.id),
+                    thanhToanApi.listByOrder(order.id)
                 ]);
 
                 const details = chiTietResponse.items.map((detail) => ({
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                         <div class="small text-muted mb-1">Số điện thoại</div>
                                         <div class="mb-2">${order.so_dien_thoai || currentAccount.so_dien_thoai || ""}</div>
                                         <div class="small text-muted mb-1">Địa chỉ đang hiển thị</div>
-                                        <div>${defaultAddress?.dia_chi || "Backend cần trả thêm địa chỉ đã dùng cho đơn hàng nếu bạn muốn hiển thị chính xác từng đơn."}</div>
+                                        <div>${defaultAddress?.dia_chi || "Địa chỉ giao hàng sẽ được cập nhật khi đơn hàng có đầy đủ thông tin."}</div>
                                     </div>
                                     <div class="order-summary">
                                         <div class="fw-bold mb-3">Thanh toán</div>
@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Đơn hàng",
-                subtitle: "Có lỗi khi tải danh sách đơn hàng.",
+                subtitle: "Không thể tải danh sách đơn hàng lúc này.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Đơn hàng" }
@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${renderEmptyState({
                 icon: "fa-triangle-exclamation",
                 title: "Không thể tải đơn hàng",
-                message: error.message || "Vui lòng kiểm tra API và thử lại."
+                message: error.message || "Vui lòng thử lại sau."
             })}
         `;
     }

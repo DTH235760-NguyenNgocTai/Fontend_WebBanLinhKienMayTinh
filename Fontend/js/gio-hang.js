@@ -9,7 +9,8 @@ import {
     renderEmptyState,
     renderLoadingState,
     renderPageHero,
-    ROUTES
+    ROUTES,
+    setCartBadgeCount
 } from "./helpers.js";
 
 function calculateCartSummary(items = []) {
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Giỏ hàng",
-                subtitle: "Bạn cần đăng nhập để đồng bộ giỏ hàng qua API.",
+                subtitle: "Đăng nhập để xem và quản lý giỏ hàng của bạn.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Giỏ hàng" }
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${renderEmptyState({
                 icon: "fa-cart-shopping",
                 title: "Bạn chưa đăng nhập",
-                message: "Giỏ hàng dùng dữ liệu thật từ API nên cần tài khoản để đồng bộ.",
+                message: "Vui lòng đăng nhập để đồng bộ giỏ hàng theo tài khoản của bạn.",
                 actionLabel: "Đăng nhập",
                 actionHref: buildUrl(ROUTES.login, { redirect: window.location.href })
             })}
@@ -77,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const renderCart = async () => {
             const [cartData, sanPhamResponse, catalog] = await Promise.all([
                 gioHangApi.getCurrentWithDetails({ khach_hang_id: currentAccount.id }),
-                sanPhamApi.list(),
+                sanPhamApi.listAll(),
                 loadCatalogLookups()
             ]);
 
@@ -115,6 +116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </tr>
                 `;
                 summaryRoot.innerHTML = "";
+                setCartBadgeCount(0);
                 return;
             }
 
@@ -154,6 +156,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                     `
                 )
                 .join("");
+
+            setCartBadgeCount(summary.totalQuantity);
 
             summaryRoot.innerHTML = `
                 <div class="cart-summary">
@@ -223,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         pageRoot.innerHTML = `
             ${renderPageHero({
                 title: "Giỏ hàng",
-                subtitle: "Có lỗi khi đồng bộ giỏ hàng từ API.",
+                subtitle: "Không thể tải dữ liệu giỏ hàng lúc này.",
                 breadcrumbs: [
                     { label: "Trang chủ", url: ROUTES.home },
                     { label: "Giỏ hàng" }
@@ -232,7 +236,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${renderEmptyState({
                 icon: "fa-triangle-exclamation",
                 title: "Không thể tải giỏ hàng",
-                message: error.message || "Vui lòng kiểm tra API và thử lại."
+                message: error.message || "Vui lòng thử lại sau."
             })}
         `;
     }

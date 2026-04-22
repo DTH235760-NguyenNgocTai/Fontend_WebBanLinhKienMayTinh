@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/47.6.1/ckeditor5.css" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../../css/base.css">
     <link rel="stylesheet" href="../../css/layout.css">
@@ -26,7 +27,7 @@
                     <span class="current">Sản phẩm</span>
                 </nav>
                 <h1 class="mb-3">Quản lý sản phẩm</h1>
-                <p class="mb-0">Thêm, sửa, xóa sản phẩm và cập nhật ảnh chính theo dữ liệu API.</p>
+                <p class="mb-0">Thêm, sửa, xóa sản phẩm và tải ảnh gốc trực tiếp lên API để backend lưu lên cloud.</p>
             </section>
 
             <section class="admin-page-grid">
@@ -60,17 +61,25 @@
                     <div class="section-heading">
                         <div>
                             <h2 class="section-title" id="admin-product-form-title">Thêm sản phẩm</h2>
-                            <p class="section-subtitle">Form bám theo đúng field của bảng `san_pham`.</p>
+                            <p class="section-subtitle">Form bám theo field của bảng `san_pham`, ảnh được tải bằng file thay vì dán link.</p>
                         </div>
                     </div>
                     <form id="admin-product-form" class="admin-form-grid">
                         <div>
                             <label class="form-label fw-semibold">Mã sản phẩm</label>
-                            <input id="product-ma-san-pham" type="text" class="form-control" required>
+                            <input
+                                id="product-ma-san-pham"
+                                type="text"
+                                class="form-control"
+                                required
+                                maxlength="64"
+                                pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
+                                title="Chỉ được chứa chữ, số, dấu chấm, gạch dưới hoặc gạch ngang"
+                            >
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Tên</label>
-                            <input id="product-ten" type="text" class="form-control" required>
+                            <input id="product-ten" type="text" class="form-control" required maxlength="255">
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Danh mục</label>
@@ -81,37 +90,84 @@
                             <select id="product-thuong-hieu-id" class="form-select" required></select>
                         </div>
                         <div>
+                            <label class="form-label fw-semibold">Giá nhập</label>
+                            <input id="product-gia-nhap" type="number" min="0" max="2147483647" step="1" class="form-control" required>
+                        </div>
+                        <div>
                             <label class="form-label fw-semibold">Giá bán</label>
-                            <input id="product-gia-ban" type="number" min="0" class="form-control" required>
+                            <input id="product-gia-ban" type="number" min="0" max="2147483647" step="1" class="form-control" required>
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Giá giảm</label>
-                            <input id="product-gia-giam" type="number" min="0" class="form-control">
+                            <input id="product-gia-giam" type="number" min="0" max="2147483647" step="1" class="form-control">
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Bảo hành (tháng)</label>
-                            <input id="product-bao-hanh" type="number" min="0" class="form-control" required>
+                            <input id="product-bao-hanh" type="number" min="0" max="120" step="1" class="form-control" required>
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Số lượng tồn</label>
-                            <input id="product-so-luong-ton" type="number" min="0" class="form-control" required>
+                            <input id="product-so-luong-ton" type="number" min="0" max="1000000" step="1" class="form-control" required>
                         </div>
                         <div>
                             <label class="form-label fw-semibold">Trạng thái</label>
                             <select id="product-trang-thai" class="form-select" required></select>
                         </div>
-                        <div>
-                            <label class="form-label fw-semibold">Đường dẫn ảnh chính</label>
-                            <input id="product-duong-dan-anh" type="text" class="form-control">
+                        <div class="full">
+                            <label class="form-label fw-semibold">Bộ ảnh sản phẩm</label>
+                            <input id="product-anh-file" type="file" class="form-control" accept="image/*" multiple>
+                            <div class="form-text">Tối đa 5 ảnh cho mỗi sản phẩm: 1 ảnh chính và tối đa 4 ảnh phụ. Khi sửa sản phẩm, nếu chọn bộ ảnh mới rồi lưu thì toàn bộ ảnh cũ sẽ được thay thế.</div>
                         </div>
+                        <div class="full">
+                            <label class="form-label fw-semibold">URL ảnh chính hiện tại</label>
+                            <input
+                                id="product-duong-dan-anh"
+                                type="text"
+                                class="form-control"
+                                readonly
+                                placeholder="URL cloud sẽ hiện ở đây sau khi backend upload thành công"
+                            >
+                        </div>
+                        <div class="full d-none" id="product-image-preview-wrap">
+                            <div class="product-image-preview-panel">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                    <div class="small text-muted mb-0" id="product-image-preview-label">Chưa có ảnh được chọn</div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="product-image-selection-clear">
+                                        Xóa ảnh mới đã chọn
+                                    </button>
+                                </div>
+                                <div class="product-image-preview-grid" id="product-image-preview-list"></div>
+                            </div>
+                        </div>
+
                         <div class="full">
                             <label class="form-label fw-semibold">Mô tả ngắn</label>
-                            <textarea id="product-mo-ta-ngan" class="form-control" rows="2" required></textarea>
+                            <textarea id="product-mo-ta-ngan" class="d-none"></textarea>
+                            <button type="button" class="description-preview-card" data-open-description-editor="mo_ta_ngan">
+                                <span class="description-preview-header">
+                                    <span class="description-preview-title">Mô tả ngắn gọn</span>
+                                    <span class="description-preview-action">Mở CKEditor</span>
+                                </span>
+                                <span class="description-preview-body" id="product-mo-ta-ngan-preview">
+                                    Chưa có mô tả ngắn. Bấm để nhập trong popup.
+                                </span>
+                            </button>
                         </div>
+
                         <div class="full">
                             <label class="form-label fw-semibold">Mô tả chi tiết</label>
-                            <textarea id="product-mo-ta-chi-tiet" class="form-control" rows="5" required></textarea>
+                            <textarea id="product-mo-ta-chi-tiet" class="d-none"></textarea>
+                            <button type="button" class="description-preview-card description-preview-card-large" data-open-description-editor="mo_ta_chi_tiet">
+                                <span class="description-preview-header">
+                                    <span class="description-preview-title">Mô tả chi tiết</span>
+                                    <span class="description-preview-action">Mở CKEditor</span>
+                                </span>
+                                <span class="description-preview-body" id="product-mo-ta-chi-tiet-preview">
+                                    Chưa có mô tả chi tiết. Bấm để nhập trong popup.
+                                </span>
+                            </button>
                         </div>
+
                         <div class="full d-flex gap-3">
                             <button class="btn btn-primary" type="submit">Lưu sản phẩm</button>
                             <button class="btn btn-outline-primary" type="button" id="admin-product-reset">Tạo mới</button>
@@ -122,9 +178,32 @@
         </section>
     </main>
 
+    <div class="modal fade" id="product-description-modal" tabindex="-1" aria-labelledby="product-description-modal-title" aria-hidden="true" data-bs-focus="false">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <div class="small-caps mb-2">Trình soạn thảo</div>
+                        <h2 class="h4 mb-1" id="product-description-modal-title">Mô tả sản phẩm</h2>
+                        <p class="text-muted mb-0" id="product-description-modal-subtitle">Nhập nội dung trong CKEditor rồi bấm áp dụng để lưu lại về form.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <textarea id="product-description-modal-editor"></textarea>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="product-description-modal-save">Áp dụng nội dung</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="site-footer"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/47.6.1/ckeditor5.umd.js" crossorigin></script>
     <script type="module" src="../../js/admin/san-pham.js"></script>
 </body>
 </html>

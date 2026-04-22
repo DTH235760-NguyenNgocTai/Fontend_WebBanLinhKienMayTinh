@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         detailRoot.innerHTML = renderLoadingState("Đang tải chi tiết đơn hàng...");
 
         const [chiTietResponse, thanhToanResponse] = await Promise.all([
-            chiTietDonHangApi.list({ don_hang_id: order.id }),
-            thanhToanApi.list({ don_hang_id: order.id })
+            chiTietDonHangApi.listByOrder(order.id),
+            thanhToanApi.listByOrder(order.id)
         ]);
 
         const payment = thanhToanResponse.items[0] || null;
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         tableRoot.innerHTML = `<tr><td colspan="6">${renderLoadingState("Đang tải đơn hàng...")}</td></tr>`;
         const [orderResponse, sanPhamResponse, lookups] = await Promise.all([
             donHangApi.list(),
-            sanPhamApi.list(),
+            sanPhamApi.listAll(),
             loadCatalogLookups()
         ]);
         orders = orderResponse.items.sort((a, b) => new Date(b.ngay_dat || 0) - new Date(a.ngay_dat || 0));
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 await donHangApi.update(orderId, {
                     trang_thai: select.value
                 });
-                showToast("Đã cập nhật trạng thái đơn hàng.");
+                showToast("Cập nhật trạng thái đơn hàng thành công.");
                 await loadOrders();
             } catch (error) {
                 showToast(error.message || "Không thể cập nhật đơn hàng.", "danger");

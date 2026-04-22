@@ -1,4 +1,5 @@
 import { sanPhamApi } from "./api.js";
+import { enableProductCardPreview } from "./product-preview.js";
 import {
     addProductToCart,
     buildUrl,
@@ -14,6 +15,21 @@ import {
 } from "./helpers.js";
 
 const PAGE_SIZE = 8;
+
+function mapSortKeyToBackend(sortKey = "ngay_tao_desc") {
+    switch (sortKey) {
+        case "gia_ban_asc":
+            return "gia_tang";
+        case "gia_ban_desc":
+            return "gia_giam";
+        case "ten_asc":
+            return "a_z";
+        case "ten_desc":
+            return "z_a";
+        default:
+            return "moi_nhat";
+    }
+}
 
 function sortProducts(items = [], sortKey = "ngay_tao_desc") {
     const sorted = [...items];
@@ -32,7 +48,9 @@ function sortProducts(items = [], sortKey = "ngay_tao_desc") {
             sorted.sort((a, b) => (b.ten || "").localeCompare(a.ten || "", "vi"));
             break;
         default:
-            sorted.sort((a, b) => new Date(b.ngay_tao || 0) - new Date(a.ngay_tao || 0));
+            sorted.sort(
+                (a, b) => new Date(b.ngay_tao || b.created_at || 0) - new Date(a.ngay_tao || a.created_at || 0)
+            );
             break;
     }
 
@@ -44,7 +62,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const keywordInput = document.getElementById("filter-tu-khoa");
     const categorySelect = document.getElementById("filter-danh-muc");
     const brandSelect = document.getElementById("filter-thuong-hieu");
-    const statusSelect = document.getElementById("filter-trang-thai");
     const sortSelect = document.getElementById("filter-sap-xep");
     const gridRoot = document.getElementById("products-grid");
     const countRoot = document.getElementById("products-result-count");
@@ -55,16 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { currentAccount } = await initializeLayout({ currentPage: "san-pham", area: "user" });
 
     try {
-        const [catalog, sanPhamResponse] = await Promise.all([
-            loadCatalogLookups(),
-            sanPhamApi.list({
-                tu_khoa: keywordInput.value.trim() || undefined,
-                danh_muc_id: categorySelect.value || undefined,
-                thuong_hieu_id: brandSelect.value || undefined,
-                trang_thai: statusSelect.value || undefined,
-                sap_xep: sortSelect.value || undefined
-            })
-        ]);
+        const catalog = await loadCatalogLookups();
 
         const currentPage = Number(new URLSearchParams(window.location.search).get("trang") || 1);
         const params = new URLSearchParams(window.location.search);
@@ -79,7 +87,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         keywordInput.value = params.get("tu_khoa") || "";
         categorySelect.value = params.get("danh_muc_id") || "";
         brandSelect.value = params.get("thuong_hieu_id") || "";
-        statusSelect.value = params.get("trang_thai") || "";
         sortSelect.value = params.get("sap_xep") || "ngay_tao_desc";
 
         const productMap = new Map();
@@ -87,12 +94,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         const renderPage = async (page = 1) => {
             gridRoot.innerHTML = renderLoadingState("Đang lọc sản phẩm...");
 
-            const response = await sanPhamApi.list({
-                tu_khoa: keywordInput.value.trim() || undefined,
+            const response = await sanPhamApi.listAll({
+                keyword: keywordInput.value.trim() || undefined,
                 danh_muc_id: categorySelect.value || undefined,
                 thuong_hieu_id: brandSelect.value || undefined,
-                trang_thai: statusSelect.value || undefined,
-                sap_xep: sortSelect.value || undefined
+                sort: mapSortKeyToBackend(sortSelect.value)
             });
 
             const filteredProducts = sortProducts(
@@ -100,6 +106,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 sortSelect.value
             );
 
+            productMap.clear();
             filteredProducts.forEach((item) => productMap.set(Number(item.id), item));
 
             const localPagination = paginateLocally(filteredProducts, page, PAGE_SIZE);
@@ -125,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     tu_khoa: keywordInput.value.trim() || undefined,
                     danh_muc_id: categorySelect.value || undefined,
                     thuong_hieu_id: brandSelect.value || undefined,
-                    trang_thai: statusSelect.value || undefined,
                     sap_xep: sortSelect.value || undefined,
                     trang: localPagination.currentPage !== 1 ? localPagination.currentPage : undefined
                 })
@@ -150,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }, 350)
         );
 
-        [categorySelect, brandSelect, statusSelect, sortSelect].forEach((field) => {
+        [categorySelect, brandSelect, sortSelect].forEach((field) => {
             field.addEventListener("change", async () => {
                 await renderPage(1);
             });
@@ -182,12 +188,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
 
+        enableProductCardPreview({
+            root: gridRoot,
+            catalog,
+            resolveProduct: (productId) => productMap.get(Number(productId)) || null
+        });
+
         await renderPage(currentPage);
     } catch (error) {
         gridRoot.innerHTML = renderEmptyState({
             icon: "fa-triangle-exclamation",
             title: "Không thể tải danh sách sản phẩm",
-            message: error.message || "Vui lòng kiểm tra API và thử lại."
+            message: error.message || "Vui lòng thử lại sau."
         });
     }
 });

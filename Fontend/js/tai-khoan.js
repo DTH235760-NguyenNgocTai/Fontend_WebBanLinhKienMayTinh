@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const freshAccount = await getCurrentAccount();
     const [diaChiResponse, donHangResponse] = await Promise.all([
-        diaChiGiaoHangApi.list({ khach_hang_id: currentAccount.id }),
-        donHangApi.list({ khach_hang_id: currentAccount.id })
+        diaChiGiaoHangApi.listByCustomer(currentAccount.id),
+        donHangApi.listByCustomer(currentAccount.id)
     ]);
 
     let addressEditingId = 0;
@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             Object.assign(freshAccount, updated);
             renderAccount();
-            showToast("Đã cập nhật thông tin tài khoản.");
+            showToast("Cập nhật thông tin tài khoản thành công.");
         } catch (error) {
             showToast(error.message || "Không thể cập nhật tài khoản.", "danger");
         }
@@ -216,11 +216,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 await diaChiGiaoHangApi.create(payload);
             }
 
-            addresses = (await diaChiGiaoHangApi.list({ khach_hang_id: currentAccount.id })).items;
+            addresses = (await diaChiGiaoHangApi.listByCustomer(currentAccount.id)).items;
             addressEditingId = 0;
             addressForm.reset();
             renderAccount();
-            showToast("Đã lưu địa chỉ giao hàng.");
+            showToast("Lưu địa chỉ giao hàng thành công.");
         } catch (error) {
             showToast(error.message || "Không thể lưu địa chỉ.", "danger");
         }

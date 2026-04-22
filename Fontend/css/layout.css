@@ -129,12 +129,13 @@
 
 @media (min-width: 992px) {
     :root {
-        --site-side-nav-width: 252px;
+        --site-side-nav-width: clamp(232px, 18vw, 252px);
+        --site-side-nav-gap: clamp(1rem, 1.8vw, 1.6rem);
     }
 
     main,
     #site-footer {
-        margin-left: var(--site-side-nav-width);
+        margin-left: calc(var(--site-side-nav-width) + var(--site-side-nav-gap));
     }
 
     .site-side-nav {

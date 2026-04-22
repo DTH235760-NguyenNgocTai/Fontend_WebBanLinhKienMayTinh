@@ -1,4 +1,6 @@
 import { sanPhamApi } from "./api.js";
+import { enableProductCardPreview } from "./product-preview.js";
+import { stripRichTextHtml } from "./rich-text.js";
 import {
     addProductToCart,
     buildUrl,
@@ -14,7 +16,9 @@ import {
 } from "./helpers.js";
 
 function sortByNewest(items = []) {
-    return [...items].sort((first, second) => new Date(second.ngay_tao || 0) - new Date(first.ngay_tao || 0));
+    return [...items].sort(
+        (first, second) => new Date(second.ngay_tao || second.created_at || 0) - new Date(first.ngay_tao || first.created_at || 0)
+    );
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -31,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
         const [sanPhamResponse, catalog] = await Promise.all([
-            sanPhamApi.list({ sap_xep: "ngay_tao_desc" }),
+            sanPhamApi.listAll({ sort: "moi_nhat" }),
             loadCatalogLookups()
         ]);
 
@@ -39,6 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const discountedProducts = newestProducts.filter((item) => Number(item.gia_giam || 0) > 0).slice(0, 4);
         const heroProduct = newestProducts[0] || null;
         const productMap = new Map(newestProducts.map((item) => [Number(item.id), item]));
+        const heroDescription =
+            stripRichTextHtml(heroProduct?.mo_ta_ngan || "") ||
+            "Sản phẩm nổi bật đang được nhiều khách hàng quan tâm.";
 
         heroRoot.innerHTML = heroProduct
             ? `
@@ -47,7 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <div class="small-caps mb-3">Trang chủ</div>
                         <h1 class="display-6 fw-bold mb-3">${escapeHtml(heroProduct.ten)}</h1>
                         <p class="mb-0">
-                            ${escapeHtml(heroProduct.mo_ta_ngan || "Giao diện đã được refactor để hiển thị dữ liệu thật từ API, giữ nguyên phong cách và tách sạch cấu trúc source code.")}
+                            ${escapeHtml(heroDescription)}
                         </p>
                         <div class="hero-banner-actions">
                             <a class="btn btn-primary" href="${buildUrl(ROUTES.chi_tiet_san_pham, { id: heroProduct.id })}">Xem chi tiết</a>
@@ -72,9 +79,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
             `
             : renderEmptyState({
-                  icon: "fa-box-open",
+              icon: "fa-box-open",
                   title: "Chưa có sản phẩm để hiển thị",
-                  message: "Khi API sản phẩm có dữ liệu, banner và danh sách trang chủ sẽ tự động đổ ra tại đây."
+                  message: "Sản phẩm nổi bật sẽ xuất hiện tại đây khi cửa hàng cập nhật dữ liệu."
               });
 
         categoryRoot.innerHTML = catalog.danh_muc.length
@@ -84,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         <a class="category-card" href="${buildUrl(ROUTES.san_pham, { danh_muc_id: danh_muc.id })}">
                             <div class="category-icon mb-3"><i class="fa-solid fa-layer-group"></i></div>
                             <h3 class="h5 fw-bold mb-2">${escapeHtml(danh_muc.ten)}</h3>
-                            <p class="text-muted mb-0">Lọc nhanh theo danh mục sản phẩm từ API.</p>
+                            <p class="text-muted mb-0">Khám phá nhanh các sản phẩm cùng nhóm.</p>
                         </a>
                     `
                   )
@@ -92,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-layer-group",
                   title: "Chưa có danh mục",
-                  message: "Danh mục sẽ xuất hiện tại đây khi backend trả dữ liệu."
+                  message: "Danh mục sẽ xuất hiện tại đây khi cửa hàng cập nhật dữ liệu."
               });
 
         newestRoot.innerHTML = newestProducts.length
@@ -103,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-box-open",
                   title: "Chưa có sản phẩm mới",
-                  message: "API sản phẩm hiện chưa trả dữ liệu cho trang chủ."
+                  message: "Sản phẩm mới sẽ xuất hiện tại đây khi cửa hàng cập nhật dữ liệu."
               });
 
         discountRoot.innerHTML = discountedProducts.length
@@ -111,8 +118,20 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-tags",
                   title: "Chưa có sản phẩm giảm giá",
-                  message: "Khi `gia_giam` có dữ liệu từ backend, khu vực giá tốt sẽ hiển thị tại đây."
+                  message: "Các ưu đãi mới sẽ xuất hiện tại đây khi có chương trình giảm giá."
               });
+
+        enableProductCardPreview({
+            root: newestRoot,
+            catalog,
+            resolveProduct: (productId) => productMap.get(Number(productId)) || null
+        });
+
+        enableProductCardPreview({
+            root: discountRoot,
+            catalog,
+            resolveProduct: (productId) => productMap.get(Number(productId)) || null
+        });
 
         document.addEventListener("click", async (event) => {
             const button = event.target.closest("[data-add-to-cart]");
@@ -134,7 +153,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const fallback = renderEmptyState({
             icon: "fa-triangle-exclamation",
             title: "Không thể tải dữ liệu trang chủ",
-            message: error.message || "Vui lòng kiểm tra API và thử lại."
+            message: error.message || "Vui lòng thử lại sau."
         });
         heroRoot.innerHTML = fallback;
         categoryRoot.innerHTML = fallback;

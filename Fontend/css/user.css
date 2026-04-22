@@ -106,6 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-width: 0;
 }
 
 .products-filter-card {
@@ -137,8 +138,13 @@
 
 .products-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1rem;
+    align-items: stretch;
+}
+
+.products-grid > * {
+    min-width: 0;
 }
 
 .detail-price-box {
@@ -201,6 +207,21 @@
     gap: 1.5rem;
 }
 
+.hero-banner,
+.products-filter-form,
+.products-intro-card,
+.checkout-layout,
+.profile-grid,
+.order-card {
+    min-width: 0;
+}
+
+.products-filter-form > *,
+.checkout-layout > *,
+.profile-grid > * {
+    min-width: 0;
+}
+
 .address-card {
     padding: 1.1rem;
     border-radius: 18px;
@@ -255,15 +276,29 @@
     background: var(--danger);
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 1199.98px) {
     .hero-banner,
     .checkout-layout,
     .profile-grid {
         grid-template-columns: 1fr;
     }
 
+    .products-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .products-filter-form {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .product-info-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .hero-banner {
+        gap: 1.25rem;
     }
 }
 
@@ -287,6 +322,12 @@
     }
 
     .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 479.98px) {
+    .products-grid {
+        grid-template-columns: 1fr;
     }
 }

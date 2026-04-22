@@ -65,8 +65,28 @@
                             <input id="brand-ten" type="text" class="form-control" required>
                         </div>
                         <div>
-                            <label class="form-label fw-semibold">Logo</label>
-                            <input id="brand-logo" type="text" class="form-control" placeholder="Đường dẫn logo">
+                            <label class="form-label fw-semibold">Logo thương hiệu</label>
+                            <input id="brand-logo-file" type="file" class="form-control" accept="image/*">
+                            <div class="form-text">Logo sẽ được tải lên giống ảnh sản phẩm. Khi chọn file mới và lưu, logo cũ sẽ được thay thế bằng URL backend trả về.</div>
+                        </div>
+                        <input id="brand-logo" type="hidden">
+                        <div class="d-none" id="brand-logo-preview-wrap">
+                            <div class="product-image-preview-panel">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                                    <div class="small text-muted mb-0" id="brand-logo-preview-label">Chưa có logo</div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm d-none" id="brand-logo-selection-clear">
+                                        Xóa logo đã chọn
+                                    </button>
+                                </div>
+                                <div class="product-image-preview-grid">
+                                    <div class="product-image-preview-card">
+                                        <span class="product-image-preview-badge">Logo</span>
+                                        <div class="product-image-preview-frame">
+                                            <img id="brand-logo-preview" src="" alt="Xem trước logo thương hiệu">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="d-flex gap-3">
                             <button class="btn btn-primary" type="submit">Lưu thương hiệu</button>
