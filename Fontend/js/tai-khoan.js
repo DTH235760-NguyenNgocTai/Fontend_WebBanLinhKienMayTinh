@@ -57,9 +57,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let addressEditingId = 0;
     let addresses = diaChiResponse.items;
-    const recentOrders = donHangResponse.items
-        .filter((item) => Number(item.tai_khoan_id) === Number(currentAccount.id))
-        .sort((a, b) => new Date(b.ngay_dat || 0) - new Date(a.ngay_dat || 0));
+    const recentOrders = donHangResponse.items || [];
 
     const renderAccount = () => {
         const totalSpent = recentOrders.reduce((sum, item) => sum + Number(item.tong_thanh_toan || 0), 0);
@@ -235,19 +233,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         try {
-            if (payload.la_mac_dinh) {
-                await Promise.all(
-                    addresses
-                        .filter((item) => item.la_mac_dinh && Number(item.id) !== Number(addressEditingId))
-                        .map((item) =>
-                            diaChiGiaoHangApi.update(item.id, {
-                                ...item,
-                                la_mac_dinh: false
-                            })
-                        )
-                );
-            }
-
             if (addressEditingId) {
                 await diaChiGiaoHangApi.update(addressEditingId, payload);
             } else {

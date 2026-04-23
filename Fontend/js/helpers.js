@@ -233,7 +233,8 @@ export function getProductDiscountPercent(san_pham) {
     return 0;
   }
 
-  return Math.round((1 - gia_giam / gia_ban) * 100);
+  var percent = (1 - gia_giam / gia_ban) * 100;
+  return Number(percent.toFixed(2));
 }
 
 function normalizeProductStatus(value = "") {

@@ -1,4 +1,4 @@
-export const BASE_URL = "http://127.0.0.1:8080/api";
+export const BASE_URL = "http://localhost/TKGear/TKGear-BE/public/api";
 
 export const STORAGE_KEYS = {
   accessToken: "frontend-linh-kien.access_token",
@@ -427,23 +427,13 @@ export const hinhAnhSanPhamApi = createCrudResource(
 export const diaChiGiaoHangApi = {
   ...createCrudResource(API_PATHS.dia_chi_giao_hang),
   async listByCustomer(tai_khoan_id) {
-    const response = await this.listAll();
-
-    return {
-      ...response,
-      items: filterItemsLocally(response.items, { tai_khoan_id }),
-    };
+    return this.listAll({ tai_khoan_id });
   },
 };
 export const donHangApi = {
   ...createCrudResource(API_PATHS.don_hang),
   async listByCustomer(tai_khoan_id) {
-    const response = await this.listAll();
-
-    return {
-      ...response,
-      items: filterItemsLocally(response.items, { tai_khoan_id }),
-    };
+    return this.listAll({ tai_khoan_id });
   },
   async checkout(payload) {
     return normalizeRecordResponse(
@@ -454,23 +444,13 @@ export const donHangApi = {
 export const chiTietDonHangApi = {
   ...createCrudResource(API_PATHS.chi_tiet_don_hang),
   async listByOrder(don_hang_id) {
-    const response = await this.listAll();
-
-    return {
-      ...response,
-      items: filterItemsLocally(response.items, { don_hang_id }),
-    };
+    return this.listAll({ don_hang_id });
   },
 };
 export const thanhToanApi = {
   ...createCrudResource(API_PATHS.thanh_toan),
   async listByOrder(don_hang_id) {
-    const response = await this.listAll();
-
-    return {
-      ...response,
-      items: filterItemsLocally(response.items, { don_hang_id }),
-    };
+    return this.listAll({ don_hang_id });
   },
 };
 
@@ -523,12 +503,7 @@ export const gioHangApi = {
     return this.create(payload);
   },
   async getDetails(params = {}) {
-    const response = await createCrudResource(API_PATHS.chi_tiet_gio_hang).listAll();
-
-    return {
-      ...response,
-      items: filterItemsLocally(response.items, params),
-    };
+    return createCrudResource(API_PATHS.chi_tiet_gio_hang).listAll(params);
   },
   async getCurrentWithDetails(createPayload = {}) {
     const gio_hang = await this.ensureCurrent(createPayload);

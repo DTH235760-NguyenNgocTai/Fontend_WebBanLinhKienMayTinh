@@ -104,19 +104,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-        const [donHangResponse, sanPhamResponse, catalog, diaChiResponse] = await Promise.all([
+        const [donHangResponse, catalog, diaChiResponse] = await Promise.all([
             donHangApi.listByCustomer(currentAccount.id),
-            sanPhamApi.listAll(),
             loadCatalogLookups(),
             diaChiGiaoHangApi.listByCustomer(currentAccount.id)
         ]);
 
         const selectedOrderId = Number(new URLSearchParams(window.location.search).get("id") || 0);
-        const productMap = new Map(sanPhamResponse.items.map((item) => [Number(item.id), item]));
         const defaultAddress = diaChiResponse.items.find((item) => item.la_mac_dinh) || diaChiResponse.items[0] || null;
-        const orders = (donHangResponse.items || [])
-            .filter((item) => Number(item.tai_khoan_id) === Number(currentAccount.id))
-            .sort((a, b) => new Date(b.ngay_dat || 0) - new Date(a.ngay_dat || 0));
+        const orders = donHangResponse.items || [];
 
         if (!orders.length) {
             ordersRoot.innerHTML = renderEmptyState({
@@ -135,16 +131,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             const htmlParts = [];
 
             for (const order of orders) {
-                const [chiTietResponse, thanhToanResponse] = await Promise.all([
-                    chiTietDonHangApi.listByOrder(order.id),
-                    thanhToanApi.listByOrder(order.id)
-                ]);
-
-                const details = chiTietResponse.items.map((detail) => ({
-                    ...detail,
-                    san_pham: productMap.get(Number(detail.san_pham_id))
-                }));
-                const payment = thanhToanResponse.items[0] || null;
+                const details = order.chi_tiets || order.chiTiets || [];
+                const payment = order.thanh_toan || order.thanhToan || null;
                 const isOpen = selectedOrderId ? Number(order.id) === selectedOrderId : false;
 
                 htmlParts.push(`

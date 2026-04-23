@@ -215,37 +215,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 </div>
             `;
 
-            summaryRoot.onclick = async (event) => {
-                const checkoutTrigger = event.target.closest("[data-cart-checkout]");
-                if (!checkoutTrigger) {
-                    return;
-                }
-
-                try {
-                    const latestProducts = (await sanPhamApi.listAll()).items;
-                    const latestProductMap = new Map(latestProducts.map((item) => [Number(item.id), item]));
-                    const latestCartItems = items.map((item) => ({
-                        ...item,
-                        san_pham: latestProductMap.get(Number(item.san_pham_id)) || item.san_pham
-                    }));
-                    const blockedItem = getBlockedCartItem(latestCartItems);
-                    if (!blockedItem) {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    await showToast(
-                        `${getProductPurchaseBlockMessage(blockedItem.san_pham, {
-                            quantity: Number(blockedItem.so_luong || 0),
-                            includeName: true
-                        })} Vui lòng cập nhật lại giỏ hàng trước khi mua.`,
-                        "warning"
-                    );
-                } catch (error) {
-                    event.preventDefault();
-                    await showToast(error.message || "Không thể kiểm tra lại sản phẩm trong giỏ hàng.", "danger");
-                }
-            };
+            // Tóm tắt đơn hàng click handler đã được gỡ bỏ (Backend sẽ validate khi tạo đơn)
 
             tableRoot.onclick = async (event) => {
                 const button = event.target.closest("[data-cart-action]");

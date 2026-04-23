@@ -180,19 +180,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 la_mac_dinh: document.getElementById("checkout-la-mac-dinh").checked
             };
 
-            if (payload.la_mac_dinh) {
-                await Promise.all(
-                    diaChiList
-                        .filter((item) => item.la_mac_dinh && Number(item.id) !== editingAddressId)
-                        .map((item) =>
-                            diaChiGiaoHangApi.update(item.id, {
-                                ...item,
-                                la_mac_dinh: false
-                            })
-                        )
-                );
-            }
-
             if (editingAddressId) {
                 return diaChiGiaoHangApi.update(editingAddressId, payload);
             }
@@ -204,24 +191,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             event.preventDefault();
 
             try {
-                const latestProducts = (await sanPhamApi.listAll()).items;
-                const latestProductMap = new Map(latestProducts.map((item) => [Number(item.id), item]));
-                const latestCheckoutItems = items.map((item) => ({
-                    ...item,
-                    san_pham: latestProductMap.get(Number(item.san_pham_id)) || item.san_pham
-                }));
-                const blockedItem = getBlockedCheckoutItem(latestCheckoutItems);
-                if (blockedItem) {
-                    await showToast(
-                        `${getProductPurchaseBlockMessage(blockedItem.san_pham, {
-                            quantity: Number(blockedItem.so_luong || 0),
-                            includeName: true
-                        })} Vui lòng quay lại giỏ hàng để cập nhật trước khi đặt mua.`,
-                        "warning"
-                    );
-                    return;
-                }
-
                 const diaChiRecord = await persistAddress();
                 const selectedPaymentMethod =
                     document.querySelector('input[name="checkout-phuong-thuc"]:checked')?.value || "COD";
