@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-receipt",
                   title: "Chưa có đơn hàng",
-                  message: "Danh sách đơn hàng sẽ hiển thị khi API trả dữ liệu."
+                  message: "Danh sách đơn hàng sẽ hiển thị tại đây khi có dữ liệu."
               });
 
         latestProductsRoot.innerHTML = sanPhamItems.length
@@ -115,13 +115,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             : renderEmptyState({
                   icon: "fa-box-open",
                   title: "Chưa có sản phẩm",
-                  message: "Danh sách sản phẩm sẽ hiển thị khi API trả dữ liệu."
+                  message: "Danh sách sản phẩm sẽ hiển thị tại đây khi có dữ liệu."
               });
     } catch (error) {
         statsRoot.innerHTML = renderEmptyState({
             icon: "fa-triangle-exclamation",
             title: "Không thể tải dashboard",
-            message: error.message || "Vui lòng kiểm tra API và thử lại."
+            message: "Không thể tải dữ liệu dashboard lúc này. Vui lòng thử lại sau."
         });
         latestOrdersRoot.innerHTML = "";
         latestProductsRoot.innerHTML = "";

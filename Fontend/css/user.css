@@ -113,6 +113,45 @@
     z-index: 1;
 }
 
+.home-category-strip {
+    display: flex;
+    gap: 0.9rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+}
+
+.home-category-pill {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 180px;
+    max-width: 240px;
+    height: auto;
+    padding: 0.9rem 1rem;
+    border-radius: 18px;
+}
+
+.home-category-pill::after {
+    display: none;
+}
+
+.home-category-pill .category-icon {
+    width: 42px;
+    height: 42px;
+    margin: 0;
+    border-radius: 14px;
+}
+
+.category-pill-title {
+    margin: 0;
+    color: var(--dark-navy);
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
 .products-page {
     min-height: calc(100vh - 320px);
 }
@@ -417,6 +456,11 @@
 
     .products-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-category-pill {
+        min-width: 160px;
+        max-width: 220px;
     }
 }
 

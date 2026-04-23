@@ -70,7 +70,6 @@
     box-shadow: var(--shadow-sm);
 }
 
-.service-card,
 .category-card {
     height: 100%;
     border: 1px solid var(--border-color);
@@ -79,14 +78,6 @@
     box-shadow: var(--shadow-sm);
 }
 
-.service-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.2rem;
-}
-
-.service-icon,
 .category-icon,
 .summary-icon {
     display: inline-grid;

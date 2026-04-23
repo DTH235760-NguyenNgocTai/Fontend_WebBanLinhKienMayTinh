@@ -1,4 +1,4 @@
-# Frontend TKGear
+# Frontend TK Grear
 
 README nay mo ta cach frontend dang hoat dong, cac API dang goi, va nhung diem backend can biet de lam viec cung frontend hien tai.
 
@@ -108,6 +108,25 @@ Payload checkout frontend hien gui:
 - Chi tiet don hang duoc doc qua `chiTietDonHangApi.listByOrder(don_hang_id)`.
 - Thanh toan cua don hang duoc doc qua `thanhToanApi.listByOrder(don_hang_id)`.
 - Dia chi giao hang cua user duoc doc qua `diaChiGiaoHangApi.listByCustomer(tai_khoan_id)`.
+- Frontend da them form doi mat khau trong trang tai khoan.
+
+Payload doi mat khau frontend hien gui:
+
+```json
+{
+  "id": 1,
+  "oldpass": "matkhaucu",
+  "newpass": "matkhaumoi",
+  "confirmpass": "matkhaumoi"
+}
+```
+
+Frontend uu tien goi mot trong cac endpoint sau:
+
+- `POST /tai-khoan/doi-mat-khau`
+- `POST /tai-khoan/change-password`
+- `POST /doi-mat-khau`
+- `POST /change-password`
 
 ## Cac luong admin
 

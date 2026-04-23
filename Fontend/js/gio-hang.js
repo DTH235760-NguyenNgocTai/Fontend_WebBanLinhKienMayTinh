@@ -41,8 +41,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     const pageRoot = document.getElementById("cart-page");
     const tableRoot = document.getElementById("cart-table-body");
     const summaryRoot = document.getElementById("cart-summary");
+    const contentColumn = document.getElementById("cart-content-column");
+    const summaryColumn = document.getElementById("cart-summary-column");
+
+    const syncCartLayout = ({ showSummary = false } = {}) => {
+        contentColumn?.classList.toggle("col-lg-8", showSummary);
+        contentColumn?.classList.toggle("col-lg-12", !showSummary);
+        summaryColumn?.classList.toggle("d-none", !showSummary);
+        summaryColumn?.classList.toggle("col-lg-4", showSummary);
+    };
 
     tableRoot.innerHTML = `<tr><td colspan="5">${renderLoadingState("Đang tải giỏ hàng...")}</td></tr>`;
+    syncCartLayout({ showSummary: false });
 
     const { currentAccount, adminArea } = await initializeLayout({ currentPage: "gio-hang", area: "user" });
 
@@ -130,6 +140,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                     </tr>
                 `;
                 summaryRoot.innerHTML = "";
+                syncCartLayout({ showSummary: false });
                 setCartBadgeCount(0);
                 return;
             }
@@ -176,6 +187,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 .join("");
 
             setCartBadgeCount(summary.totalQuantity);
+            syncCartLayout({ showSummary: true });
 
             summaryRoot.innerHTML = `
                 <div class="cart-summary">

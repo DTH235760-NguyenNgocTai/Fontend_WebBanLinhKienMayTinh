@@ -90,10 +90,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             ? catalog.danh_muc
                   .map(
                       (danh_muc) => `
-                        <a class="category-card" href="${buildUrl(ROUTES.san_pham, { danh_muc_id: danh_muc.id })}">
-                            <div class="category-icon mb-3"><i class="fa-solid fa-layer-group"></i></div>
-                            <h3 class="h5 fw-bold mb-2">${escapeHtml(danh_muc.ten)}</h3>
-                            <p class="text-muted mb-0">Khám phá nhanh các sản phẩm cùng nhóm.</p>
+                        <a class="category-card home-category-pill" href="${buildUrl(ROUTES.san_pham, { danh_muc_id: danh_muc.id })}">
+                            <div class="category-icon"><i class="fa-solid fa-layer-group"></i></div>
+                            <h3 class="category-pill-title">${escapeHtml(danh_muc.ten)}</h3>
                         </a>
                     `
                   )

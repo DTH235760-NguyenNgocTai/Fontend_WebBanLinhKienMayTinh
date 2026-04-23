@@ -17,6 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   timeStyle: "short",
 });
 const PRODUCT_PURCHASABLE_STATUSES = new Set(["hoat_dong", "sap_het_hang"]);
+export const SITE_NAME = "TK Grear";
 
 const body = document.body;
 const basePath = body?.dataset.basePath || "";
@@ -1004,57 +1005,37 @@ function renderFooter() {
   footerRoot.innerHTML = `
         <footer class="site-footer">
             <div class="container">
-                <div class="footer-service-grid">
-                    <div class="service-card">
-                        <div class="service-icon"><i class="fa-solid fa-truck-fast"></i></div>
-                        <div>
-                            <h3 class="h6 fw-bold mb-1">Mua sắm nhanh chóng</h3>
-                            <p class="text-muted mb-0">Dễ tìm kiếm, so sánh và chọn linh kiện phù hợp cho nhu cầu của bạn.</p>
-                        </div>
-                    </div>
-                    <div class="service-card">
-                        <div class="service-icon"><i class="fa-solid fa-code-branch"></i></div>
-                        <div>
-                            <h3 class="h6 fw-bold mb-1">Sản phẩm rõ thông tin</h3>
-                            <p class="text-muted mb-0">Giá bán, hình ảnh, bảo hành và mô tả được hiển thị rõ ràng, dễ theo dõi.</p>
-                        </div>
-                    </div>
-                    <div class="service-card">
-                        <div class="service-icon"><i class="fa-solid fa-plug-circle-check"></i></div>
-                        <div>
-                            <h3 class="h6 fw-bold mb-1">Hỗ trợ tận tình</h3>
-                            <p class="text-muted mb-0">Hệ thống tối ưu cho việc theo dõi đơn hàng, thanh toán và chế độ hậu mãi.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="row g-4">
-                    <div class="col-lg-4">
+                <div class="footer-main">
+                    <div class="footer-column footer-column-brand">
                         <div class="footer-brand">
                             <span class="site-logo-mark"><i class="fa-solid fa-microchip"></i></span>
                             <div>
-                                <div class="site-logo-title text-white">Linh Kiện Máy Tính</div>
+                                <div class="site-logo-title text-white">${SITE_NAME}</div>
                                 <div class="text-muted">Thiết bị và linh kiện chính hãng</div>
                             </div>
                         </div>
-                        <p class="mb-0">Chuyên cung cấp linh kiện máy tính với thông tin minh bạch, giá tốt và trải nghiệm mua sắm thuận tiện.</p>
+                        <p class="mb-0">${SITE_NAME} chuyên cung cấp linh kiện máy tính với thông tin minh bạch, giá tốt và trải nghiệm mua sắm thuận tiện.</p>
                     </div>
-                    <div class="col-lg-3 col-md-4">
+                    <div class="footer-column">
                         <h3 class="footer-title">Điều hướng</h3>
-                        <a class="footer-link" href="${ROUTES.home}">Trang chủ</a>
-                        <a class="footer-link" href="${ROUTES.san_pham}">Sản phẩm</a>
-                        <a class="footer-link" href="${ROUTES.gio_hang}">Giỏ hàng</a>
-                        <a class="footer-link" href="${ROUTES.don_hang}">Đơn hàng</a>
+                        <div class="footer-link-list">
+                            <a class="footer-link" href="${ROUTES.home}">Trang chủ</a>
+                            <a class="footer-link" href="${ROUTES.san_pham}">Sản phẩm</a>
+                            <a class="footer-link" href="${ROUTES.gio_hang}">Giỏ hàng</a>
+                            <a class="footer-link" href="${ROUTES.don_hang}">Đơn hàng</a>
+                        </div>
                     </div>
-                    <div class="col-lg-5 col-md-8">
+                    <div class="footer-column">
                         <h3 class="footer-title">Cam kết dịch vụ</h3>
-                        <div class="footer-link"><i class="fa-solid fa-link"></i> Hình ảnh sản phẩm rõ ràng, dễ theo dõi.</div>
-                        <div class="footer-link"><i class="fa-solid fa-table-columns"></i> Giá bán minh bạch, cập nhật nhanh.</div>
-                        <div class="footer-link"><i class="fa-solid fa-shield-halved"></i> Hỗ trợ mua hàng an tâm và tiện lợi.</div>
+                        <div class="footer-link-list">
+                            <div class="footer-link"><i class="fa-solid fa-link"></i> Hình ảnh sản phẩm rõ ràng, dễ theo dõi.</div>
+                            <div class="footer-link"><i class="fa-solid fa-table-columns"></i> Giá bán minh bạch, cập nhật nhanh.</div>
+                            <div class="footer-link"><i class="fa-solid fa-shield-halved"></i> Hỗ trợ mua hàng an tâm và tiện lợi.</div>
+                        </div>
                     </div>
                 </div>
-                <div class="footer-bottom d-flex flex-wrap justify-content-between gap-2">
-                    <span>&copy; 2026 Linh Kiện Máy Tính.</span>
-                    <span>Website bán linh kiện máy tính.</span>
+                <div class="footer-bottom">
+                    <span>&copy; 2026 ${SITE_NAME}.</span>
                 </div>
             </div>
         </footer>
@@ -1089,7 +1070,7 @@ export async function initializeLayout({ currentPage, area = "user" }) {
                                 <a href="${ROUTES.home}" class="site-logo">
                                     <span class="site-logo-mark"><i class="fa-solid fa-microchip"></i></span>
                                     <span>
-                                        <span class="site-logo-title">Linh Kiện Máy Tính</span>
+                                        <span class="site-logo-title">${SITE_NAME}</span>
                                         <span class="site-logo-subtitle">Thiết bị và linh kiện chính hãng</span>
                                     </span>
                                 </a>

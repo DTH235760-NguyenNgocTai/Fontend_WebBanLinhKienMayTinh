@@ -27,7 +27,7 @@
                     <span class="current">Sản phẩm</span>
                 </nav>
                 <h1 class="mb-3">Quản lý sản phẩm</h1>
-                <p class="mb-0">Thêm, sửa, xóa sản phẩm và tải ảnh gốc trực tiếp lên API để backend lưu lên cloud.</p>
+                <p class="mb-0">Thêm, chỉnh sửa và cập nhật thông tin sản phẩm trong cửa hàng.</p>
             </section>
 
             <section class="admin-page-grid">
@@ -35,7 +35,7 @@
                     <div class="admin-toolbar">
                         <div>
                             <h2 class="section-title">Danh sách sản phẩm</h2>
-                            <p class="section-subtitle">Dữ liệu lấy từ `san_pham` và `hinh_anh_san_pham`.</p>
+                            <p class="section-subtitle">Theo dõi và tìm kiếm sản phẩm hiện có.</p>
                         </div>
                         <input id="admin-product-search" type="search" class="form-control" style="max-width: 320px;" placeholder="Tìm tên hoặc mã sản phẩm">
                     </div>
@@ -61,7 +61,7 @@
                     <div class="section-heading">
                         <div>
                             <h2 class="section-title" id="admin-product-form-title">Thêm sản phẩm</h2>
-                            <p class="section-subtitle">Form bám theo field của bảng `san_pham`, ảnh được tải bằng file thay vì dán link.</p>
+                            <p class="section-subtitle">Nhập thông tin sản phẩm và cập nhật hình ảnh khi cần.</p>
                         </div>
                     </div>
                     <form id="admin-product-form" class="admin-form-grid">
@@ -119,13 +119,13 @@
                             <div class="form-text">Tối đa 5 ảnh cho mỗi sản phẩm: 1 ảnh chính và tối đa 4 ảnh phụ. Khi sửa sản phẩm, nếu chọn bộ ảnh mới rồi lưu thì toàn bộ ảnh cũ sẽ được thay thế.</div>
                         </div>
                         <div class="full">
-                            <label class="form-label fw-semibold">URL ảnh chính hiện tại</label>
+                            <label class="form-label fw-semibold">Ảnh chính hiện tại</label>
                             <input
                                 id="product-duong-dan-anh"
                                 type="text"
                                 class="form-control"
                                 readonly
-                                placeholder="URL cloud sẽ hiện ở đây sau khi backend upload thành công"
+                                placeholder="Ảnh chính sẽ hiển thị tại đây sau khi tải lên"
                             >
                         </div>
                         <div class="full d-none" id="product-image-preview-wrap">
