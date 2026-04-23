@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         </p>
                         <div class="hero-banner-actions">
                             <a class="btn btn-primary" href="${buildUrl(ROUTES.chi_tiet_san_pham, { id: heroProduct.id })}">Xem chi tiết</a>
-                            <a class="btn btn-outline-light btn-light" href="${ROUTES.san_pham}">Xem toàn bộ sản phẩm</a>
+                            <a class="btn hero-banner-secondary-btn" href="${ROUTES.san_pham}">Xem toàn bộ sản phẩm</a>
                         </div>
                         <div class="d-flex flex-wrap gap-4 mt-4">
                             <div>

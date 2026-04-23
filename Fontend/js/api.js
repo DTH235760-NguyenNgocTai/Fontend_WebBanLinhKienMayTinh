@@ -385,6 +385,36 @@ export const danhMucApi = createCrudResource(API_PATHS.danh_muc);
 export const thuongHieuApi = createCrudResource(API_PATHS.thuong_hieu);
 export const vaiTroApi = createCrudResource(API_PATHS.vai_tro);
 export const taiKhoanApi = createCrudResource(API_PATHS.tai_khoan);
+const changePasswordEndpoints = [
+  `${API_PATHS.tai_khoan}/doi-mat-khau`,
+  `${API_PATHS.tai_khoan}/change-password`,
+  "/doi-mat-khau",
+  "/change-password",
+];
+
+async function postChangePassword(payload) {
+  let lastError = null;
+
+  for (const endpoint of changePasswordEndpoints) {
+    try {
+      return normalizeRecordResponse(await apiPost(endpoint, payload));
+    } catch (error) {
+      lastError = error;
+
+      if (![404, 405].includes(Number(error?.status || 0))) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error("Không thể đổi mật khẩu lúc này.");
+}
+
+Object.assign(taiKhoanApi, {
+  async changePassword(payload) {
+    return postChangePassword(payload);
+  },
+});
 export const sanPhamApi = {
   ...createCrudResource(API_PATHS.san_pham),
   async listAll(params = {}) {

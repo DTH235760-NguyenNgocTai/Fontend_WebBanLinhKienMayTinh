@@ -73,8 +73,33 @@
                         </div>
                         <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label fw-semibold">Phương thức thanh toán</label>
-                                <input id="checkout-phuong-thuc" type="text" class="form-control" placeholder="Ví dụ: COD, chuyển khoản" required>
+                                <label class="form-label fw-semibold d-block">Phương thức thanh toán</label>
+                                <div class="payment-method-options">
+                                    <label class="payment-method-option">
+                                        <input class="payment-method-input" type="radio" name="checkout-phuong-thuc" value="COD" checked>
+                                        <span class="payment-method-card">
+                                            <span class="payment-method-indicator"></span>
+                                            <span class="payment-method-copy">
+                                                <span class="payment-method-title">
+                                                    <i class="fa-solid fa-money-bill-wave me-2"></i>Thanh Toán Bằng Tiền Mặt
+                                                </span>
+                                                <span class="payment-method-description">Thanh toán khi nhận hàng.</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                    <label class="payment-method-option">
+                                        <input class="payment-method-input" type="radio" name="checkout-phuong-thuc" value="ONLINE">
+                                        <span class="payment-method-card">
+                                            <span class="payment-method-indicator"></span>
+                                            <span class="payment-method-copy">
+                                                <span class="payment-method-title">
+                                                    <i class="fa-solid fa-credit-card me-2"></i>Thanh Toán Online
+                                                </span>
+                                                <span class="payment-method-description">Phù hợp khi chuyển khoản hoặc thanh toán trực tuyến.</span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Ghi chú</label>

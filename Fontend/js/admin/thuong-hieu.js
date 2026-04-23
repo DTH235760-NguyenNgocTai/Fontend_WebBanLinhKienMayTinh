@@ -112,19 +112,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const getPendingLogoFile = () => pendingLogoFile;
 
-    const getLogoSummaryText = (logo = "") => {
-        const trimmedLogo = String(logo || "").trim();
-        if (!trimmedLogo) {
-            return "";
-        }
-
-        if (trimmedLogo.startsWith("data:image/")) {
-            return "Logo cũ đang lưu theo dữ liệu nội tuyến.";
-        }
-
-        return trimmedLogo.length > 64 ? `${trimmedLogo.slice(0, 64)}...` : trimmedLogo;
-    };
-
     const syncLogoPreview = () => {
         const selectedFile = getPendingLogoFile();
         const logoValue = brandLogoInput.value.trim();
@@ -193,11 +180,10 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 ${
                                     item.logo
                                         ? `
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="product-image-preview-frame" style="width: 72px; min-width: 72px; aspect-ratio: 1 / 1;">
+                                            <div class="d-flex align-items-center">
+                                                <div class="product-image-preview-frame brand-logo-thumb">
                                                     <img src="${escapeHtml(item.logo)}" alt="${escapeHtml(item.ten || "Logo thương hiệu")}">
                                                 </div>
-                                                <div class="small text-muted">${escapeHtml(getLogoSummaryText(item.logo))}</div>
                                             </div>
                                         `
                                         : `<span class="small text-muted">Chưa có logo</span>`

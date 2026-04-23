@@ -223,12 +223,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 const diaChiRecord = await persistAddress();
+                const selectedPaymentMethod =
+                    document.querySelector('input[name="checkout-phuong-thuc"]:checked')?.value || "COD";
                 const don_hang = await donHangApi.checkout({
                     tai_khoan_id: currentAccount.id,
                     nguoi_nhan: diaChiRecord.ten_nguoi_nhan,
                     so_dien_thoai: diaChiRecord.so_dien_thoai,
                     dia_chi: diaChiRecord.dia_chi,
-                    phuong_thuc_thanh_toan: document.getElementById("checkout-phuong-thuc").value.trim(),
+                    phuong_thuc_thanh_toan: selectedPaymentMethod,
                     ghi_chu: document.getElementById("checkout-ghi-chu").value.trim()
                 });
 

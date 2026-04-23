@@ -2,11 +2,14 @@ import { taiKhoanApi, vaiTroApi } from "../api.js";
 import {
     ensureAdminPage,
     formatDateTime,
+    getStatusLabel,
     initializeLayout,
     renderEmptyState,
     renderLoadingState,
     showToast
 } from "../helpers.js";
+
+const accountStatuses = ["hoat_dong", "bi_khoa"];
 
 document.addEventListener("DOMContentLoaded", async () => {
     const account = await ensureAdminPage();
@@ -32,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         tableRoot.innerHTML = filtered.length
             ? filtered
                   .map((item) => {
-                      const roleName = roleMap.get(Number(item.vai_tro_id))?.ten || "Khong xac dinh";
+                      const roleName = roleMap.get(Number(item.vai_tro_id))?.ten || "Không xác định";
 
                       return `
                         <tr>
@@ -44,18 +47,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <td>${item.so_dien_thoai || ""}</td>
                             <td>
                                 <div class="fw-semibold">${roleName}</div>
-                                <div class="small text-muted">Vai tro chi doc o man hinh nay</div>
+                                <div class="small text-muted">Vai trò chỉ đọc ở màn hình này</div>
                             </td>
                             <td>
-                                <select class="form-select form-select-sm" data-account-status="${item.id}">
-                                    <option value="hoat_dong" ${item.trang_thai === "hoat_dong" ? "selected" : ""}>hoat_dong</option>
-                                    <option value="bi_khoa" ${item.trang_thai === "bi_khoa" ? "selected" : ""}>bi_khoa</option>
+                                <select class="form-select form-select-sm admin-status-select" data-account-status="${item.id}">
+                                    ${accountStatuses
+                                        .map((status) => `<option value="${status}" ${item.trang_thai === status ? "selected" : ""}>${getStatusLabel("trang_thai_tai_khoan", status)}</option>`)
+                                        .join("")}
                                 </select>
                             </td>
                             <td>${formatDateTime(item.ngay_tao)}</td>
                             <td class="text-end">
                                 <button class="btn btn-primary btn-sm" type="button" data-save-account="${item.id}">
-                                    Luu trang thai
+                                    Lưu trạng thái
                                 </button>
                             </td>
                         </tr>
@@ -64,13 +68,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                   .join("")
             : `<tr><td colspan="7">${renderEmptyState({
                   icon: "fa-users",
-                  title: "Khong co tai khoan phu hop",
-                  message: "Hay thu lai voi tu khoa khac."
+                  title: "Không có tài khoản phù hợp",
+                  message: "Hãy thử lại với từ khóa khác."
               })}</td></tr>`;
     };
 
     const loadData = async () => {
-        tableRoot.innerHTML = `<tr><td colspan="7">${renderLoadingState("Dang tai tai khoan...")}</td></tr>`;
+        tableRoot.innerHTML = `<tr><td colspan="7">${renderLoadingState("Đang tải tài khoản...")}</td></tr>`;
         const [accountResponse, roleResponse] = await Promise.all([taiKhoanApi.list(), vaiTroApi.list()]);
         accounts = accountResponse.items;
         roles = roleResponse.items;
@@ -99,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             showToast("Cập nhật trạng thái tài khoản thành công.");
             await loadData();
         } catch (error) {
-            showToast(error.message || "Khong the cap nhat trang thai tai khoan.", "danger");
+            showToast(error.message || "Không thể cập nhật trạng thái tài khoản.", "danger");
         }
     });
 

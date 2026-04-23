@@ -100,6 +100,17 @@
     align-items: center;
 }
 
+.admin-status-select {
+    min-width: 168px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #fff7f7 100%);
+    font-weight: 600;
+}
+
+.admin-table td .status-pill {
+    min-width: 132px;
+}
+
 .admin-card .ck.ck-editor {
     width: 100%;
 }
@@ -165,6 +176,11 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+}
+
+.brand-logo-thumb {
+    width: 72px;
+    min-width: 72px;
 }
 
 .product-image-preview-name {

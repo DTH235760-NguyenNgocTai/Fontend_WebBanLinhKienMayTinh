@@ -4,6 +4,7 @@ import {
     escapeHtml,
     formatCurrency,
     getProductCurrentPrice,
+    getProductMainImage,
     getProductPurchaseBlockMessage,
     initializeLayout,
     loadCatalogLookups,
@@ -135,12 +136,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
             tableRoot.innerHTML = items
                 .map(
-                    (item) => `
+                    (item) => {
+                        const productImage = getProductMainImage(item.san_pham, catalog.hinhAnhMap);
+
+                        return `
                         <tr>
                             <td>
                                 <div class="mini-product">
-                                    <div class="mini-product-thumb">
-                                        <img src="${escapeHtml(catalog.hinhAnhMap.get(Number(item.san_pham.id))?.[0]?.duong_dan || "")}" alt="${escapeHtml(item.san_pham.ten)}">
+                                    <div class="mini-product-thumb mini-product-thumb-compact">
+                                        <img src="${escapeHtml(productImage)}" alt="${escapeHtml(item.san_pham.ten)}">
                                     </div>
                                     <div>
                                         <a class="fw-bold d-block mb-1" href="${buildUrl(ROUTES.chi_tiet_san_pham, { id: item.san_pham.id })}">
@@ -166,7 +170,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 </button>
                             </td>
                         </tr>
-                    `
+                    `;
+                    }
                 )
                 .join("");
 

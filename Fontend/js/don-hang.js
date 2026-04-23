@@ -1,7 +1,10 @@
 import { chiTietDonHangApi, diaChiGiaoHangApi, donHangApi, sanPhamApi, thanhToanApi } from "./api.js";
 import {
+    escapeHtml,
     formatCurrency,
     formatDateTime,
+    formatPaymentMethod,
+    getProductMainImage,
     initializeLayout,
     loadCatalogLookups,
     renderEmptyState,
@@ -57,7 +60,7 @@ function getOrderShippingAddress(order, fallbackAddress = null) {
 }
 
 function getPaymentMethodLabel(payment, order = null) {
-    return (
+    return formatPaymentMethod(
         payment?.phuong_thuc_thanh_toan ||
         payment?.phuong_thuc ||
         order?.phuong_thuc_thanh_toan ||
@@ -168,20 +171,22 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <div class="col-lg-7">
                                     <div class="order-items-list mb-4">
                                         ${details
-                                            .map(
-                                                (detail) => `
+                                            .map((detail) => {
+                                                const productImage = getProductMainImage(detail.san_pham, catalog.hinhAnhMap);
+
+                                                return `
                                                     <div class="mini-product">
-                                                        <div class="mini-product-thumb">
-                                                            <img src="${catalog.hinhAnhMap.get(Number(detail.san_pham_id))?.[0]?.duong_dan || ""}" alt="${detail.san_pham?.ten || "Sản phẩm"}">
+                                                        <div class="mini-product-thumb mini-product-thumb-compact">
+                                                            <img src="${escapeHtml(productImage)}" alt="${escapeHtml(detail.san_pham?.ten || "Sản phẩm")}">
                                                         </div>
                                                         <div class="flex-grow-1">
-                                                            <div class="fw-bold">${detail.san_pham?.ten || "Sản phẩm"}</div>
+                                                            <div class="fw-bold">${escapeHtml(detail.san_pham?.ten || "Sản phẩm")}</div>
                                                             <div class="small text-muted">SL: ${detail.so_luong}</div>
                                                         </div>
                                                         <div class="fw-bold">${formatCurrency(detail.thanh_tien)}</div>
                                                     </div>
-                                                `
-                                            )
+                                                `;
+                                            })
                                             .join("")}
                                     </div>
                                     ${getTimelineMarkup(order.trang_thai)}
@@ -200,7 +205,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                         <div class="fw-bold mb-3">Thanh toán</div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted">Phương thức</span>
-                                            <strong>${getPaymentMethodLabel(payment, order)}</strong>
+                                            <strong class="text-end">${escapeHtml(getPaymentMethodLabel(payment, order))}</strong>
                                         </div>
                                         <div class="d-flex justify-content-between mb-2">
                                             <span class="text-muted">Trạng thái</span>

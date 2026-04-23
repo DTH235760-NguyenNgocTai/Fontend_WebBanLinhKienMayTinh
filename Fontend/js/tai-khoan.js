@@ -1,4 +1,4 @@
-import { diaChiGiaoHangApi, donHangApi } from "./api.js";
+import { diaChiGiaoHangApi, donHangApi, taiKhoanApi } from "./api.js";
 import { getCurrentAccount, updateCurrentAccount } from "./auth.js";
 import {
     escapeHtml,
@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const addressListRoot = document.getElementById("account-address-list");
     const ordersPreviewRoot = document.getElementById("account-order-preview");
     const profileForm = document.getElementById("account-profile-form");
+    const passwordForm = document.getElementById("account-password-form");
     const addressForm = document.getElementById("account-address-form");
 
     const { currentAccount, adminArea } = await initializeLayout({ currentPage: "tai-khoan", area: "user" });
@@ -159,6 +160,43 @@ document.addEventListener("DOMContentLoaded", async () => {
             showToast("Cập nhật thông tin tài khoản thành công.");
         } catch (error) {
             showToast(error.message || "Không thể cập nhật tài khoản.", "danger");
+        }
+    });
+
+    passwordForm?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const oldPasswordInput = document.getElementById("account-old-password");
+        const newPasswordInput = document.getElementById("account-new-password");
+        const confirmPasswordInput = document.getElementById("account-confirm-password");
+
+        const oldPassword = oldPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (!oldPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
+            showToast("Vui lòng nhập đầy đủ thông tin đổi mật khẩu.", "warning");
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showToast("Xác nhận mật khẩu mới không khớp.", "warning");
+            confirmPasswordInput.focus();
+            return;
+        }
+
+        try {
+            await taiKhoanApi.changePassword({
+                id: Number(currentAccount.id),
+                oldpass: oldPassword,
+                newpass: newPassword,
+                confirmpass: confirmPassword
+            });
+
+            passwordForm.reset();
+            showToast("Đổi mật khẩu thành công.");
+        } catch (error) {
+            showToast(error.message || "Không thể đổi mật khẩu.", "danger");
         }
     });
 

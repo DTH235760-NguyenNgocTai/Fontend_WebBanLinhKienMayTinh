@@ -1,8 +1,12 @@
 import { chiTietDonHangApi, donHangApi, sanPhamApi, thanhToanApi } from "../api.js";
 import {
+    escapeHtml,
     ensureAdminPage,
     formatCurrency,
     formatDateTime,
+    formatPaymentMethod,
+    getProductMainImage,
+    getStatusLabel,
     initializeLayout,
     loadCatalogLookups,
     renderEmptyState,
@@ -65,14 +69,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                 ${chiTietResponse.items
                     .map((detail) => {
                         const san_pham = productMap.get(Number(detail.san_pham_id));
+                        const productImage = getProductMainImage(san_pham, catalog.hinhAnhMap);
+
                         return `
                             <div class="admin-list-card">
                                 <div class="mini-product">
                                     <div class="mini-product-thumb">
-                                        <img src="${catalog.hinhAnhMap.get(Number(detail.san_pham_id))?.[0]?.duong_dan || ""}" alt="${san_pham?.ten || "Sản phẩm"}">
+                                        <img src="${escapeHtml(productImage)}" alt="${escapeHtml(san_pham?.ten || "Sản phẩm")}">
                                     </div>
                                     <div class="flex-grow-1">
-                                        <div class="fw-bold">${san_pham?.ten || "Sản phẩm"}</div>
+                                        <div class="fw-bold">${escapeHtml(san_pham?.ten || "Sản phẩm")}</div>
                                         <div class="small text-muted">SL: ${detail.so_luong}</div>
                                     </div>
                                     <div class="fw-bold">${formatCurrency(detail.thanh_tien)}</div>
@@ -94,7 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 <div class="col-lg-6">
                     <div class="info-card p-3 h-100">
                         <div class="text-muted small mb-1">Thanh toán</div>
-                        <div class="fw-bold mb-2">${payment?.phuong_thuc_thanh_toan || payment?.phuong_thuc || order?.phuong_thuc_thanh_toan || order?.phuong_thuc || "Chưa cập nhật"}</div>
+                        <div class="fw-bold mb-2">${escapeHtml(formatPaymentMethod(payment?.phuong_thuc_thanh_toan || payment?.phuong_thuc || order?.phuong_thuc_thanh_toan || order?.phuong_thuc))}</div>
                         <div>${payment ? renderStatus("trang_thai_thanh_toan", payment.trang_thai) : "Chưa có thanh toán"}</div>
                     </div>
                 </div>
@@ -122,9 +128,9 @@ document.addEventListener("DOMContentLoaded", async () => {
                             <td>${formatCurrency(item.tong_thanh_toan)}</td>
                             <td>${renderStatus("trang_thai_don_hang", item.trang_thai)}</td>
                             <td>
-                                <select class="form-select form-select-sm" data-order-status="${item.id}">
+                                <select class="form-select form-select-sm admin-status-select" data-order-status="${item.id}">
                                     ${orderStatuses
-                                        .map((status) => `<option value="${status}" ${status === item.trang_thai ? "selected" : ""}>${status}</option>`)
+                                        .map((status) => `<option value="${status}" ${status === item.trang_thai ? "selected" : ""}>${getStatusLabel("trang_thai_don_hang", status)}</option>`)
                                         .join("")}
                                 </select>
                             </td>

@@ -65,6 +65,22 @@ const statusMaps = {
   },
 };
 
+const paymentMethodLabels = {
+  cod: "Thanh toán bằng tiền mặt",
+  cash: "Thanh toán bằng tiền mặt",
+  tien_mat: "Thanh toán bằng tiền mặt",
+  thanh_toan_tien_mat: "Thanh toán bằng tiền mặt",
+  thanh_toan_bang_tien_mat: "Thanh toán bằng tiền mặt",
+  cash_on_delivery: "Thanh toán bằng tiền mặt",
+  online: "Thanh toán online",
+  chuyen_khoan: "Thanh toán online",
+  bank_transfer: "Thanh toán online",
+  thanh_toan_online: "Thanh toán online",
+  thanh_toan_truc_tuyen: "Thanh toán online",
+  vnpay: "Thanh toán online",
+  momo: "Thanh toán online",
+};
+
 function defaultImageDataUri(label = "No image") {
   const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640">
@@ -128,13 +144,40 @@ export function debounce(callback, wait = 300) {
   };
 }
 
-export function renderStatus(type, value) {
-  const config = statusMaps[type]?.[value] || {
+function getStatusConfig(type, value) {
+  return statusMaps[type]?.[value] || {
     label: value || "Chưa cập nhật",
     tone: "info",
   };
+}
+
+function normalizeLookupKey(value = "") {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+export function getStatusLabel(type, value) {
+  return getStatusConfig(type, value).label;
+}
+
+export function renderStatus(type, value) {
+  const config = getStatusConfig(type, value);
 
   return `<span class="status-pill ${config.tone}">${escapeHtml(config.label)}</span>`;
+}
+
+export function formatPaymentMethod(value) {
+  const rawValue = String(value || "").trim();
+  if (!rawValue) {
+    return "Chưa cập nhật";
+  }
+
+  return paymentMethodLabels[normalizeLookupKey(rawValue)] || rawValue;
 }
 
 export function handleImageError(event, label = "No image") {
