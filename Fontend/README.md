@@ -1,4 +1,4 @@
-# Frontend TK Grear
+# Frontend TK Gear
 
 README nay mo ta cach frontend dang hoat dong, cac API dang goi, va nhung diem backend can biet de lam viec cung frontend hien tai.
 

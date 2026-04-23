@@ -17,7 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
   timeStyle: "short",
 });
 const PRODUCT_PURCHASABLE_STATUSES = new Set(["hoat_dong", "sap_het_hang"]);
-export const SITE_NAME = "TK Grear";
+export const SITE_NAME = "TK Gear";
 
 const body = document.body;
 const basePath = body?.dataset.basePath || "";
@@ -619,7 +619,7 @@ export function showToast(message, tone = "success") {
         ? "Lưu ý!"
         : tone === "info"
           ? "Thông báo"
-          : "Xin cảm ơn!";
+          : "Thành công!";
 
   return showCenterPopup({
     title: popupTitle,

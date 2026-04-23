@@ -1224,7 +1224,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             await refreshProductsAfterMutation({ highlightId: isEditing ? record.id : 0 });
             hideCenterPopup();
             await showCenterPopup({
-                title: "Xin cảm ơn!",
+                title: "Thành công!",
                 message: successMessage,
                 tone: "success",
                 confirmLabel: "OK"
