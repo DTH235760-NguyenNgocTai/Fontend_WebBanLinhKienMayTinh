@@ -440,6 +440,11 @@ export const donHangApi = {
       await apiPost(`${API_PATHS.don_hang}/checkout`, payload),
     );
   },
+  async cancel(id) {
+    return normalizeRecordResponse(
+      await apiPost(`${API_PATHS.don_hang}/${id}/cancel`)
+    );
+  },
 };
 export const chiTietDonHangApi = {
   ...createCrudResource(API_PATHS.chi_tiet_don_hang),

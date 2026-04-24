@@ -11,6 +11,8 @@ import {
     renderLoadingState,
     renderPageHero,
     renderStatus,
+    showConfirmDialog,
+    showToast,
     ROUTES
 } from "./helpers.js";
 
@@ -150,9 +152,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <div class="text-muted small">Người nhận: ${order.nguoi_nhan || currentAccount.ho_ten}</div>
                                 <strong>Tổng thanh toán: ${formatCurrency(order.tong_thanh_toan)}</strong>
                             </div>
-                            <button class="btn btn-outline-primary" type="button" data-order-toggle="${order.id}">
-                                ${isOpen ? "Ẩn chi tiết" : "Xem chi tiết"}
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn ${order.trang_thai === 'cho_xac_nhan' ? 'btn-outline-danger' : 'btn-secondary text-white'}" style="${order.trang_thai !== 'cho_xac_nhan' ? 'opacity: 0.6; cursor: not-allowed;' : ''}" type="button" data-order-cancel="${order.id}" ${order.trang_thai === 'cho_xac_nhan' ? '' : 'disabled'}>
+                                    Hủy đơn
+                                </button>
+                                <button class="btn btn-outline-primary" type="button" data-order-toggle="${order.id}">
+                                    ${isOpen ? "Ẩn chi tiết" : "Xem chi tiết"}
+                                </button>
+                            </div>
                         </div>
                         <div class="${isOpen ? "" : "d-none"}" id="order-detail-${order.id}">
                             <div class="row g-4">
@@ -215,22 +222,47 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
 
         ordersRoot.addEventListener("click", async (event) => {
-            const button = event.target.closest("[data-order-toggle]");
-            if (!button) {
+            const toggleBtn = event.target.closest("[data-order-toggle]");
+            if (toggleBtn) {
+                const orderId = Number(toggleBtn.dataset.orderToggle);
+                const nextParams = new URLSearchParams(window.location.search);
+
+                if (Number(nextParams.get("id") || 0) === orderId) {
+                    nextParams.delete("id");
+                } else {
+                    nextParams.set("id", orderId);
+                }
+
+                window.history.replaceState({}, "", `${ROUTES.don_hang}${nextParams.toString() ? `?${nextParams.toString()}` : ""}`);
+                window.location.reload();
                 return;
             }
 
-            const orderId = Number(button.dataset.orderToggle);
-            const nextParams = new URLSearchParams(window.location.search);
+            const cancelBtn = event.target.closest("[data-order-cancel]");
+            if (cancelBtn) {
+                const orderId = Number(cancelBtn.dataset.orderCancel);
+                const confirmed = await showConfirmDialog({
+                    title: "Hủy đơn hàng",
+                    message: "Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
+                    confirmLabel: "Hủy đơn",
+                    cancelLabel: "Giữ lại",
+                    tone: "danger"
+                });
+                if (confirmed) {
+                    try {
+                        cancelBtn.disabled = true;
+                        cancelBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang hủy...';
 
-            if (Number(nextParams.get("id") || 0) === orderId) {
-                nextParams.delete("id");
-            } else {
-                nextParams.set("id", orderId);
+                        await donHangApi.cancel(orderId);
+                        await showToast("Hủy đơn hàng thành công!", "success");
+                        window.location.reload();
+                    } catch (error) {
+                        await showToast(error.message || "Đã xảy ra lỗi khi hủy đơn hàng.", "danger");
+                        cancelBtn.disabled = false;
+                        cancelBtn.innerHTML = 'Hủy đơn';
+                    }
+                }
             }
-
-            window.history.replaceState({}, "", `${ROUTES.don_hang}${nextParams.toString() ? `?${nextParams.toString()}` : ""}`);
-            window.location.reload();
         });
 
         await renderOrders();
